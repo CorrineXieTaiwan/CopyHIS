@@ -1,0 +1,10 @@
+{
+  "customMappings": {
+    "Pus aerobic & anaerobic culture": "Pus/C",
+    "DNR不施行心肺復甦術": "DNR",
+    "流行性感冒A型病毒抗原  Influenza A Ag": "A流感(_)",
+    "流行性感冒B型病毒抗原  Influenza B Ag": "B流感(_)"
+  },
+  "exportDate": "2025-01-27T17:00:00.000Z",
+  "version": "1.0"
+} 
