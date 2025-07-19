@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N14：護理紀錄快捷器</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="unity.png" type="image/x-icon">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* 基礎樣式 */
+    body {
+      font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f4f8 100%);
+      min-height: 100vh;
+      padding: 20px;
+      margin: 0;
+      color: #475569;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+      min-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 表單欄位樣式 */
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 600px;
+      justify-content: flex-start;
+    }
+
+    .field label {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #475569;
+      min-width: 80px;
+      text-align: left;
+    }
+
+    /* 下拉選單樣式 */
+    select {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+      padding: 10px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(248, 250, 252, 0.4) 100%);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      color: #475569;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(248, 250, 252, 0.4) 100%) url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="%23475569" d="M0 0l5 6 5-6z"/></svg>') no-repeat right 15px center;
+      background-size: 12px;
+      margin: 0;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: rgba(99, 102, 241, 0.7);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.7) 100%) url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path fill="%23475569" d="M0 0l5 6 5-6z"/></svg>') no-repeat right 15px center;
+      background-size: 12px;
+    }
+
+    /* 文字區域樣式 */
+    textarea {
+      width: 100%;
+      max-width: 600px;
+      height: 200px;
+      margin-top: 15px;
+      padding: 15px;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(248, 250, 252, 0.4) 100%);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #475569;
+      resize: none;
+      box-sizing: border-box;
+      font-family: inherit;
+      margin: 0 auto;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: rgba(99, 102, 241, 0.7);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.7) 100%);
+    }
+
+    /* 按鈕樣式 */
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+      color: white;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(139, 92, 246, 1) 100%);
+    }
+
+    /* 按鈕容器樣式 */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 25px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* Copy 按鈕特殊樣式 */
+    #copy {
+      width: 200px;
+      height: 45px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff6f61 0%, #ff9068 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    #copy:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(255, 111, 97, 0.2);
+      background: linear-gradient(135deg, #ff6f61 0%, #ff9068 100%);
+    }
+
+    #copy:active {
+      transform: translateY(0);
+    }
+
+    .container h3 {
+      margin-top: 20px;
+      margin-bottom: 0;
+      color: #64748b;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 主要容器 -->
+  <div class="container">
+    <!-- 使用者選擇 -->
+    <div class="field">
+      <label for="topSelect">護理紀錄：</label>
+      <select id="topSelect">
+        <option value="">請選擇主要紀錄項目</option>
+        <option value="general">一般護理紀錄</option>
+        <option value="temp">臨時護理紀錄</option>
+        <option value="plan">護理計畫評值</option>
+        <option value="exam">檢查相關紀錄</option>
+        <option value="surgery">手術護理紀錄</option>
+        <option value="transfer">單位轉床摘要</option>
+        <option value="event">特殊異常事件</option>
+        <option value="newpatient">新病人入院記錄</option>
+      </select>
+    </div>
+
+    <!-- 護理情景選擇 -->
+    <div class="field">
+      <label for="primarySelect">護理情景：</label>
+      <select id="primarySelect">
+        <option value="">選擇護理計劃及情景</option>
+        <option value="STAT">STAT Order</option>
+        <option value="Chemo">化學藥物治療</option>
+        <option value="potentialInfection">護理計劃：潛在危險性感染</option>
+        <option value="fallRisk">護理計劃：潛在危險性跌倒</option>
+        <option value="acutePain">護理計劃：急性疼痛問題</option>
+        <option value="feeling">護理計劃：健康焦慮問題</option>
+        <option value="oxygen">護理計劃：低效性呼吸型態</option>
+        <option value="Skin">護理計劃：皮膚破損情形</option>
+        <option value="Survey">一般紀錄：檢查相關</option>
+        <option value="OP">一般紀錄：手術相關</option>
+        <option value="other">一般紀錄：其他</option>
+        <option value="Wait">等待建構中</option>
+      </select>
+    </div>
+
+    <!-- 紀錄項目選擇 -->
+    <div class="field">
+      <label for="secondarySelect">紀錄項目：</label>
+      <select id="secondarySelect">
+        <option value="">請先選擇護理計劃及情景</option>
+      </select>
+    </div>
+
+    <!-- 輸出文字區域 -->
+    <textarea id="output">※使用說明※
+首先選擇使用者，再選擇護理情景，最後點選紀錄項目，會顯示範本內容，填空區需進行檢視修改，最後點擊【Copy】即可直接貼於HIS護理紀錄系統。</textarea>
+
+    <!-- 按鈕區域 -->
+    <div class="button-container">
+      <button id="copy">Copy</button>
+    </div>
+
+    <h3>紀錄僅供參考，務必檢視修改！</h3>
+  </div>
+
+  <script>
+    // 取得 DOM 元素
+    const topSelect = document.getElementById('topSelect');
+    const primarySelect = document.getElementById('primarySelect');
+    const secondarySelect = document.getElementById('secondarySelect');
+    const copyButton = document.getElementById('copy');
+    const output = document.getElementById('output');
+
+    // 初始化時鎖住護理計劃與紀錄項目
+    primarySelect.disabled = true;
+    secondarySelect.disabled = true;
+
+    // 主要分類到護理計劃的映射
+    const topOptionsMap = {
+      general: [
+        { code: 'Other', label: '一般紀錄：其他' },
+        { code: 'STAT', label: '一般紀錄：臨時醫囑或事件' },
+        { code: 'Chemo', label: '一般紀錄：化學治療' },
+      ],
+      temp: [
+        { code: 'Wait', label: '等待建構中' },
+      ],
+      plan: [
+        { code: 'Infection', label: '護理計劃：潛在危險性感染' },
+        { code: 'Move', label: '護理計劃：潛在危險性跌倒' },
+        { code: 'Oxygen', label: '護理計劃：低效性呼吸型態' },
+        { code: 'AcutePain', label: '護理計劃：急性疼痛問題' },
+        { code: 'Feeling', label: '護理計劃：健康焦慮問題' },
+        { code: 'Skin', label: '護理計劃：皮膚破損情形' },
+      ],
+      exam: [
+        { code: 'Survey', label: '一般紀錄：檢查相關' },
+        { code: 'Wait', label: '等待建構中' },
+      ],
+      surgery: [
+        { code: 'OP', label: '一般紀錄：手術相關' },
+        { code: 'Wait', label: '等待建構中' },
+      ],
+      transfer: [
+        { code: 'Wait', label: '等待建構中' },
+      ],
+      event: [
+        { code: 'Wait', label: '等待建構中' },
+      ],
+      newpatient: [
+        { code: 'erIn', label: '急診入院紀錄' },
+        { code: 'opdMed', label: '門診內科紀錄' },
+        { code: 'opdSurg', label: '門診外科紀錄' },
+      ],
+    };
+
+    // 第三個下拉式選單項目
+    const optionsMap = {
+      Move: [
+        { value: 'move1', text: '班內多臥床休息，紅色手圈配戴，雙側床欄使用，床輪固定良好，床旁陪病者照護，予常規探視。' },
+        { value: 'move2', text: '班內四肢乏力疲倦虛弱，下床時需協助攙扶，使用輪椅輔助活動，臥床休息時可配合雙側床欄使用，床旁陪病者照護，暫無跌倒情形發生。' },
+        { value: 'move3', text: '班內四肢肌肉力量為滿分，可自行下床如廁，生活自理，觀察步態平穩，予常規探視。' }
+      ],
+      Infection: [
+        { value: 'Inf1', text: '班內四肢皮膚溫暖，暫無發燒情形發生，續觀體溫變化。' },
+        { value: 'Inf2', text: '班內有發燒情形發生，現維持醫囑抗生素使用，並依醫囑指示給予退燒藥物，續觀體溫變化。' },
+      ],
+      AcutePain: [
+        { value: 'Pain1', text: '班內病人表示疼痛情形尚可忍受，依常規醫囑止痛藥物使用，暫無不適主訴，續觀疼痛情形。' },
+        { value: 'Pain2', text: '班內病人主訴疼痛指數約（填數字）分，依常規醫囑予止痛藥物可緩解，暫無疼痛不適主訴，續觀。' },
+      ],
+      Oxygen: [
+        { value: 'Bipap', text: '班內未使用氧氣系統，呼吸平順，血氧穩定，暫無呼吸不適主訴，續觀呼吸型態。' },
+        { value: 'Nasal Cannula', text: '班內氧氣Nasal Cannula 3L/min使用，呼吸平順，血氧穩定，暫無呼吸不適主訴，續觀呼吸型態。' },
+        { value: 'Inspiron', text: '班內氧氣Inspiron Mask 28% 5L/min使用，呼吸平順，血氧穩定，暫無呼吸不適主訴，續觀呼吸型態。' },
+        { value: 'Simple', text: '班內氧氣Simple Mask 6L/min使用，呼吸平順，血氧穩定，暫無呼吸不適主訴，續觀呼吸型態。' },
+        { value: 'BIPAP', text: '班內呼吸器BIPAP ST Mode、FiO2:＿% 氧氣使用、PEEP:＿、PC:＿、Rate:＿、Pt:＿，呼吸平順，班內血氧穩定，視需要予協助抽痰，續觀血氧變化。' },
+        { value: 'HFNC', text: '班內呼吸器HFNC FiO2:＿氧氣使用，呼吸平順，血氧穩定，視需要予協助抽痰，續觀血氧變化。' },
+        { value: 'Venturi', text: '班內氧氣Venturi Mask 35% 8L/min使用，呼吸平順，血氧穩定，暫無呼吸不適主訴，續觀呼吸型態。' },
+        { value: 'T-PIECE', text: '班內氧氣Tr.接T-PIECE 28% 5L/min使用，呼吸平順，血氧穩定，視需要予協助抽痰，續觀呼吸型態。' }
+      ],
+      Other: [
+        { value: '1.O', text: '經當科專科護理師＿於主治醫師＿的指示下，表示？' },
+        { value: 'O.1', text: '現主治醫師查房探視病人，予解釋病情後，家屬及病人可瞭解，同意後續治療方向。' },
+        { value: 'O.2', text: '現病人要求請假外出，經當科評估病人後准許請假，已告知請假四小時原則，或有不適務必立即返院，予協助填寫外出假單，續觀返室時間。' },
+        { value: 'O.3', text: '現依臨時醫囑使用針劑藥物（填藥物名稱），暫無藥物不良反應發生，續觀。' },
+        { value: 'O.4', text: '現依臨時醫囑使用口服藥物（填藥物名稱），予親視服藥後，無藥物不良反應發生，續觀。' },
+        { value: 'O.5', text: '病人施打化療藥物中，療程無不適主訴，滴注順暢，無化療外滲情形發生，續觀。' },
+        { value: 'O.6', text: '病人外出中，尚未返室，已電話聯繫通知，續觀返室時間，予紀錄。' },
+        { value: 'O.7', text: '查房病人不假外出，已電話聯繫通知，續觀返室時間，予紀錄。' },
+        { value: 'O.8', text: '現病人及家屬要求解釋病情，已告知當科，待主治醫師查房。' },
+        { value: 'O.9', text: '現危險值回覆通知，已告知當科，待醫囑指示。' },
+      ],
+      Feeling: [
+        { value: 'OK', text: '班內病人情緒平穩，暫無相關疑問提出，續觀。' },
+        { value: 'anxiety', text: '班內病人情緒焦慮，予安撫心情後，病人可緩解焦慮感，續觀。' },
+        { value: 'questions', text: '班內病人暫無相關疑問提出，續觀。' },
+      ],
+      Skin: [
+        { value: 'wound1', text: '班內暫無新皮膚傷口產生，陪病者可配合Q2H翻身更換姿勢預防壓傷發生，續觀。' },
+        { value: 'wound2', text: '班內壓傷傷口存，予常規消毒換藥後，紗布覆蓋完整，陪病者可協助Q2H翻身，續觀傷口變化。' },
+        { value: 'wound3', text: '班內再次加強衛教陪病者預防壓傷注意事項，務必每兩小時配合翻身更換姿勢，予翻身鐘使用，續觀壓傷傷口變化。' },
+      ],
+      Survey: [
+        { value: 'survey1', text: '病人明日預行檢查，現告知病人及家屬午夜後維持禁食禁水，病人已知可配合，予紀錄。' },
+        { value: 'survey2', text: '由主治醫師解釋病情，因疾病需求預排立相關檢查，已簽署檢查同意書。' },
+        { value: 'survey3', text: '班內再次加強衛教陪病者預防壓傷注意事項，務必每兩小時配合翻身更換姿勢，予翻身鐘使用，續觀壓傷傷口變化。' },
+      ],
+      OP: [
+        { value: 'OP1', text: '現手術室通知送刀，病人由傳送人員及家屬陪同下使用輪椅至手術室，生命徵象穩定，點滴滴注順暢，續觀返室時間。' },
+        { value: 'OP2', text: '病人明日預行手術，已告知病人及家屬午夜後維持禁食禁水，病人已知可配合，予紀錄。' },
+        { value: 'OP3', text: '（恢復室電話交班）現恢復室交班表示，病人此次採全麻行（填入位置）＿＿（術式：楔狀切除、肺葉切除術、肺分節切除術、肋膜黏合術、肺膜剝脫術）胸腔鏡手術，失血量少，術中放置（填入位置）＿＿號直胸管固定於＿公分接雙腔引流瓶採EMS-15cmH2O使用，傷口美容膠紗布覆蓋，放置＿號導尿管接尿袋，術中疼痛予＿＿（Dynastat、Aloxi、Morphine、Fentanyl、Keto），血壓高或低用藥：＿＿（Perdipine、Ephedrine），左臀施打Naldebain IM，生命徵象穩定，術後追蹤CXR，續觀返室時間。' },
+        { value: 'OP4', text: '（VS夏）病人現由轉送護理師及家屬陪同推床返室，意識清楚，呼吸平順，氧氣鼻導管3L/min使用，依醫囑予三合一生理監測器使用，生命徵象穩定，現身上管路＿＿號直胸管固定＿公分接雙腔引流瓶採EMS-15cmH2O使用，＿號導尿管存，雙手靜脈針留置，已衛教家屬胸腔引流瓶及管路照護注意事項、紀錄輸出入量，並告知禁食禁水四小時至＿＿，家屬及病人已知可配合。' },
+        { value: 'OP5', text: '（外科）病人現由轉送護理師及家屬陪同推床返室，意識清楚，呼吸平順，氧氣鼻導管3L/min使用，生命徵象穩定，現身上管路＿＿號直胸管固定＿公分接＿（電子胸瓶？）雙腔引流瓶採EMS-15cmH2O使用，＿靜脈針留置，已衛教家屬胸腔引流瓶及管路照護注意事項、紀錄輸出入量，並告知禁食禁水六小時後若無不適可進食，家屬及病人已知可配合。' },
+        { value: 'OP6', text: '（Port-A人工血管恢復室交班）現恢復室電話交班表示，病人此次採局部麻醉，行人工血管基座放置手術，於＿＿靜脈放置在＿＿鎖骨位置置入Power Port-A基座，角針有無放置？，傷口美容膠加紗布覆蓋完整，生命徵象穩定，意識清楚，術後追蹤CXR，待返室。' },
+        { value: 'OP7', text: '（Jejunostomy恢復室交班）現恢復室電話交班表示，病人此次採全麻，行空腸造口手術，左空腸造口放置16號鼻胃管fix＿？＿cm，身上腹部束腹帶使用中，放置＿＿號導尿管接尿袋，術中疼痛給予（Dynastat、Aloxi、Morphine、Fentanyl、Keto），失血量少，Simple Mask 6L/MIN氧氣使用，生命徵象穩定，術後追蹤CXR，續觀返室時間。' },
+        { value: 'OP8', text: '手術留檢：冰凍切片：Adenocarcinoma、石蠟切片：、Pathology:。' },
+      ],
+      STAT: [
+        { value: 'stat1', text: '經當科專科護理師＿於主治醫師＿的指示下，開立醫囑指示予？' },
+        { value: 'stat2', text: '經當科住院醫師＿表示，依醫囑予？' },
+        { value: 'stat3', text: '班內予協助抽痰，量顏色性質呈？' },
+        { value: 'stat4', text: '現呼吸治療師前往病室探視病人，經評估病人血氧變化後，予調整氧氣濃度為？' },
+        { value: 'stat5', text: '現病人追蹤CXR已返室，現協助抽晨血。' },
+        { value: 'stat6', text: '昨日Pig tail總引流量為＿ml、漏氣量＿ml、現小腔刻度在＿ml、大腔刻度在＿ml。' },
+        { value: 'stat7', text: '昨日胸管總引流量為＿ml、漏氣量＿ml、現小腔刻度在＿ml、大腔刻度在＿ml。' },
+        { value: 'stat8', text: '查房探視病人，臥床休息，呼吸平順，予常規紀錄。' },
+        { value: 'stat9', text: '白班及小夜輸出入量差異數值為＿、尿量＿ml，排便量＿g，觀察病人呼吸平順，無呼吸喘、四肢無水種情形，值班醫師表示持續觀察即可。'},
+      ],
+      Wait: [
+        { value: 'wait', text: '尚未建構紀錄項目' },
+      ],
+      Chemo: [
+        { value: 'Chemo1', text: '經主治醫師醫囑指示，病人預計施行化學治療，現已簽署抗癌藥物治療同意書。' },
+        { value: 'Chemo2', text: '經主治醫師醫囑指示，病人預計使用自費藥物，現已簽署相關自費同意書。' },
+        { value: 'Chemo3', text: '班內由兩位護理人員雙重核對已確認化療醫囑程序單，現依醫囑給予前置藥物，並進行化療藥物衛教，病人已知暫無疑慮。' },
+        { value: 'Chemo4', text: '今日人工血管角針已到期，予重新放置，反抽有回血，N/S推注順暢。' },
+        { value: 'Chemo5', text: '因病人第一次施打此抗腫瘤藥物：(藥名醫囑：_)，故予進行床邊口頭衛教及給予藥物紙張單張，病人可瞭解暫無疑慮。' },
+        { value: 'Chemo6', text: '班內病人施打抗腫瘤藥物過程中，暫無不良反應及不適主訴，現點滴滴注順暢，入針處無紅腫、無化療外滲情形發生，續觀。' },
+        { value: 'Chemo7', text: '現依醫囑予Hepac Lock Flush 1000 USP units/10ml/vial(封管沖洗用)1vial STAT IVP，將人工血管採正壓封管後移除角針，消毒後紗布覆蓋完整，並衛教病人拔針處四小時內需保持乾燥避免感染，病人已瞭解可配合，協助辦理出院相關手續。' },
+        { value: 'Chemo8', text: '現由兩位護理人員雙重核對藥物及醫囑單無誤，依醫囑予（藥名醫囑：Kemoplat Injection 0.5vial QD IVD、NS 250ml/pack 1pack QD IVD），化療前已測針有回血，生理食鹽水推注順暢，現依醫囑指示設定滴速給藥劑量，續觀病人反應。' },
+        { value: 'Chemo9', text: '【日期】MBD（－）、診斷證明書*份??、預約回診（－）、出院帶藥（－）、下次住院單（－）、回診前抽血+X光（－）' },
+        { value: 'Chemo10', text: '病人施打化療十五分鐘後，主訴不適感（＿症狀徵象＿），有藥物不良反應發生，予量生命徵象，並立即告知當科，依醫囑暫停滴注化療藥物，續觀。' },
+      ],
+      erIn: [
+        { value: 'er19', text: '肺炎/呼吸道感染（急診入院）' },
+        { value: 'er20', text: '泌尿道感染（急診入院）' },
+        { value: 'er21', text: '病況不穩（急診入院）' }
+      ],
+      opdMed: [
+        { value: 'opdMed1', text: '病人本身病史＿＿（慢性疾病、癌症病史、病理分期如：Adenocacinoma，Stage:＿,cT＿N＿M＿，轉移部位？），曾接受治療＿＿（治療方式：化療、放療、標靶、手術？）、＿＿（使用中藥物名稱，是否停用？），陸續於＿＿門診追蹤，日期＿檢查（PET、Chest_CT、Bone scan、MRI）：＿＿（檢查結果），（懷疑疾病復發、轉移、發現新病灶？）＿＿，經醫師建議入院治療。' },
+        { value: 'opdMed2', text: '病人本身有＿＿（慢性疾病），＿＿（治療方式）使用，＿＿年因＿＿（疾病）＿＿（治療方式），規則門診追蹤。＿＿年＿＿月＿＿檢查：＿＿（檢查結果），醫師診斷＿＿（診斷），建議＿＿（後續處置），經醫師建議入院治療。' },
+        { value: 'opdMed3', text: '病患何時何日＿＿（日期），此次因＿＿（主訴，如右肋痛、活動時會呼吸喘、疲累）至＿＿醫院門診就醫，予＿＿（藥物治療/處置），行＿＿（MRI、CT、CXR等檢查）：＿＿（檢查結果，如右肺積水，疑似腫瘤），故轉診至本院詳檢。＿＿年＿＿月＿＿日F/U ChestCT：＿＿（檢查結果，如肺癌多發性轉移）、＿＿年＿＿月＿＿日Abd sono：＿＿（檢查結果，如肝腫瘤右葉,疑似轉移性腫瘤、腎囊腫、實質腎病、右肋膜積水）、＿＿年＿＿月＿＿日Echo guided biopsy：＿＿（檢查結果，如轉移性低分化癌）、tapping（＿＿部位放液＿＿cc）：＿＿（檢查結果，如Non-Small cell carcinoma）。＿＿年＿＿月＿＿日因＿＿（主訴，如呼吸喘）入急診，CXR：＿＿（檢查結果，如RIGHT PLEURAL EFFUSION），＿＿（處置，如右胸放至14號豬尾巴固定在第2格引流＿＿ml、顏色＿＿並送檢全套），留取Cytology及Cell block：＿＿（檢查結果，如malignancy），因基因配對＿＿（如EGFR(Exon 21:+)）故將＿＿（藥物名稱，如Giotrif F.C）調整為＿＿（藥物名稱，如Tagrisso），此次預入院行＿＿（治療計畫，如營養補充及標靶治療）。' }
+      ],
+      opdSurg: [
+        { value: 'opdSurg1', text: '病人本身有＿＿（慢性疾病）及＿＿（癌症病史+分期Adenocacinoma，Stage:＿,cT＿N＿M＿），曾行＿＿（治療方式：化療、放療、標靶、手術？），規則服用藥物＿＿（藥物名稱），規則門診追蹤，＿＿年＿＿月＿＿檢查：＿＿（檢查結果），懷疑疾病復發、轉移、發現新病灶？，經醫師建議入院治療。' },
+        { value: 'opdSurg2', text: '病人自述此次因健康檢查，(檢查日期+項目+報告結果：＿＿），陸續門診追蹤，＿＿年＿＿月：＿＿（追蹤結果），經主治醫師評估入院＿＿（檢查/手術）治療。' }
+      ],
+    };
+
+    // 新增完整內容對照表
+    const fullTextMap = {
+      er19: '因「肺炎／呼吸道感染」於急診入院，此次入院原因＿＿＿（主訴、代訴），入院時意識＿＿，體溫＿＿℃，呼吸＿＿次/分，SpO₂＿＿%，症狀徵象：＿＿＿＿（例如：發燒、咳血、呼吸喘），已依醫囑安排＿＿（抽血、VBG、U/A+U/C、B/C、ARD、CXR、EKG、Chest_CT、COVID-19、A+B流感等）檢查，因＿＿症狀給予＿＿（抗生素、退燒藥、化痰藥等）治療，醫療處置＿＿，經醫師建議入院治療。',
+      er20: '因「泌尿道感染」於急診入院，此次入院原因＿＿＿（主訴、代訴），入院時意識＿＿，體溫＿＿℃，血壓＿＿/＿＿mmHg，尿液顏色＿＿，量＿＿ml。已依醫囑安排＿＿（抽血、U/A+U/C、B/C、ARD、CXR、EKG等）檢查，給予＿＿（抗生素、STAT藥物等）治療，醫療處置＿＿，經醫師建議入院治療。',
+      er21: '因「病況不穩」於急診入院，此次入院原因＿＿＿（主訴、代訴），入院時意識＿＿，生命徵象：體溫＿＿℃，血壓＿＿/＿＿mmHg，脈搏＿＿次/分，呼吸＿＿次/分，SpO₂＿＿%。已依醫囑安排＿＿（抽血、U/A+U/C、B/C、ARD、CXR、EKG等）檢查，給予＿＿（STAT藥物名稱）治療，醫療處置＿＿，經醫師建議入院治療。'
+    };
+
+    // 1. 產生標題的函數
+    function generateTitle(text) {
+      // 取第一個句號或15字以內作為標題
+      const firstSentence = text.split('。')[0];
+      return firstSentence.length > 15 ? firstSentence.slice(0, 15) + '…' : firstSentence;
+    }
+
+    // 事件監聽器：使用者選擇變更
+    topSelect.addEventListener('change', () => {
+      const selectedCategory = topSelect.value;
+      
+      // 清空護理計劃與紀錄項目
+      primarySelect.innerHTML = '<option value="">選擇護理計劃</option>';
+      secondarySelect.innerHTML = '<option value="">請先選擇護理計劃</option>';
+      
+      // 預設禁用護理計劃與紀錄項目
+      primarySelect.disabled = true;
+      secondarySelect.disabled = true;
+
+      // 如果選擇了單位，則啟用護理計劃
+      if (selectedCategory && topOptionsMap[selectedCategory]) {
+        primarySelect.disabled = false;
+        topOptionsMap[selectedCategory].forEach(plan => {
+          const opt = document.createElement('option');
+          opt.value = plan.code;
+          opt.textContent = plan.label;
+          primarySelect.appendChild(opt);
+        });
+      }
+    });
+
+    // 事件監聽器：護理計劃選擇變更
+    primarySelect.addEventListener('change', () => {
+      const selectedPlan = primarySelect.value;
+      
+      // 清空紀錄項目
+      secondarySelect.innerHTML = '<option value="">請選擇紀錄項目</option>';
+      secondarySelect.disabled = true;
+
+      // 如果選擇了護理計劃，則啟用紀錄項目
+      if (selectedPlan && optionsMap[selectedPlan]) {
+        secondarySelect.disabled = false;
+        optionsMap[selectedPlan].forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.value;
+          // 產生標題
+          let fullText = item.text;
+          if (fullTextMap && fullTextMap[item.value]) fullText = fullTextMap[item.value];
+          opt.textContent = generateTitle(fullText);
+          opt.title = fullText;
+          secondarySelect.appendChild(opt);
+        });
+      }
+    });
+
+    // 事件監聽器：紀錄項目選擇變更
+    secondarySelect.addEventListener('change', () => {
+      const selectedValue = secondarySelect.value;
+      // 一律優先顯示 fullTextMap 的完整內容
+      if (selectedValue && fullTextMap[selectedValue]) {
+        output.value = fullTextMap[selectedValue];
+      } else if (selectedValue) {
+        // 若 fullTextMap 沒有，則找 optionsMap 的原始 text
+        let found = null;
+        for (const key in optionsMap) {
+          const arr = optionsMap[key];
+          const match = arr.find(item => item.value === selectedValue);
+          if (match) { found = match.text; break; }
+        }
+        output.value = found || '請選擇一筆紀錄項目！';
+      } else {
+        output.value = '請選擇一筆紀錄項目！';
+      }
+    });
+
+    // 事件監聽器：Copy 按鈕點擊
+    copyButton.addEventListener('click', () => {
+      if (output.value) {
+        // 過濾掉全形的 ＿ 以及括號 () 內的內容
+        const filteredText = output.value.replace(/＿/g, '').replace(/\(.*?\)/g, '').trim();
+      
+        // 只將過濾後的內容複製，不改變 output.value
+        navigator.clipboard.writeText(filteredText).then(() => {
+          copyButton.style.background = 'linear-gradient(45deg, #4CAF50, #66BB6A)';
+          copyButton.textContent = 'Copied!';
+
+          // 2 秒後恢復原本顏色
+          setTimeout(() => {
+            copyButton.style.background = 'linear-gradient(45deg, #ff6f61, #ff9068)';
+            copyButton.textContent = 'Copy';
+          }, 2000);
+        });
+      }
+    });
+
+
+  </script>
+</body>
+</html> 

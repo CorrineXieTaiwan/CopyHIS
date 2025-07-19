@@ -45,7 +45,7 @@ GitHub自動同步功能允許您通過上傳JSON檔案到GitHub來自動更新�
 ## 預設GitHub URL
 系統會自動從以下URL同步：
 ```
-https://raw.githubusercontent.com/CorrineXie/medical-terms/main/custom_mappings.json
+https://raw.githubusercontent.com/CorrineXieTaiwan/CopyHIS/refs/heads/main/custom_mappings.json
 ```
 
 ## 同步機制
