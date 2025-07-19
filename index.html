@@ -982,6 +982,9 @@
                             <button type="button" class="btn btn-secondary" onclick="reloadExternalMappings()" style="flex: 1;">
                                 🔄 重新載入外部檔案
                             </button>
+                            <button type="button" class="btn btn-secondary" onclick="testJsonLoading()" style="flex: 1;">
+                                🧪 測試 JSON 載入
+                            </button>
                         </div>
                         
                         <div class="form-section" style="background: rgba(255, 255, 255, 0.9); margin-top: 8px; padding: 15px 15px 8px 15px;">
@@ -2655,6 +2658,63 @@
             } catch (error) {
                 console.error('❌ 重新載入失敗：', error);
                 alert('❌ 重新載入失敗：' + error.message);
+            }
+        }
+        
+        // 測試 JSON 載入功能
+        async function testJsonLoading() {
+            console.log('🧪 開始測試 JSON 載入功能...');
+            
+            try {
+                // 測試網路連線
+                const response = await fetch('./medical_terms_mapping.json');
+                console.log('📡 網路回應：', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // 測試 JSON 解析
+                const data = await response.json();
+                console.log('📄 解析的 JSON 資料：', data);
+                
+                // 檢查格式
+                let formatType = '未知';
+                let itemCount = 0;
+                
+                if (data.mappings) {
+                    formatType = '完整對照表格式';
+                    itemCount = Object.keys(data.mappings).length;
+                } else if (data.customMappings) {
+                    formatType = '自定義項目格式';
+                    itemCount = Object.keys(data.customMappings).length;
+                } else {
+                    throw new Error('格式不正確：缺少 mappings 或 customMappings');
+                }
+                
+                // 顯示測試結果
+                let message = `🧪 JSON 載入測試結果\n\n`;
+                message += `✅ 網路連線：正常\n`;
+                message += `✅ JSON 解析：成功\n`;
+                message += `📋 檔案格式：${formatType}\n`;
+                message += `📊 項目數量：${itemCount} 條\n`;
+                message += `📅 版本：${data.version || '未知'}\n`;
+                message += `📅 更新時間：${data.exportDate || data.lastUpdated || '未知'}\n\n`;
+                
+                if (data.customMappings) {
+                    message += `📋 自定義項目：\n`;
+                    Object.entries(data.customMappings).forEach(([key, value]) => {
+                        message += `• ${key} → ${value}\n`;
+                    });
+                }
+                
+                message += `\n請檢查 Console 查看詳細資訊。`;
+                
+                alert(message);
+                
+            } catch (error) {
+                console.error('❌ JSON 載入測試失敗：', error);
+                alert(`❌ JSON 載入測試失敗：\n\n${error.message}\n\n請檢查：\n1. 檔案是否存在\n2. JSON 格式是否正確\n3. GitHub 是否已部署`);
             }
         }
     </script>
