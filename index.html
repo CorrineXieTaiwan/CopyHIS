@@ -971,7 +971,10 @@
                                 ➕ 新增術語
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="settingsExportMappings()" style="flex: 1;">
-                                📤 匯出對照表
+                                📤 匯出完整對照表
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="settingsExportCustomMappings()" style="flex: 1;">
+                                📤 匯出自定義項目
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="settingsImportMappings()" style="flex: 1;">
                                 📥 匯入對照表
@@ -1068,15 +1071,76 @@
                 const data = await response.json();
                 console.log('📄 解析的 JSON 資料：', data);
                 
-                medicalTermsMapping = data.mappings || {};
+                // 檢查資料格式並處理
+                if (data.mappings) {
+                    // 格式1：包含 mappings 物件的完整對照表
+                    medicalTermsMapping = data.mappings;
+                    console.log(`✅ 成功載入完整對照表：${Object.keys(medicalTermsMapping).length} 條術語對照`);
+                    showLoadSuccessMessage(data);
+                    
+                } else if (data.customMappings) {
+                    // 格式2：只包含自定義項目的檔案
+                    console.log('📋 檢測到自定義對照表格式，正在合併預設項目...');
+                    
+                    // 預設對照表
+                    const defaultMappings = {
+                        'Blood gas analysis_靜脈血氣體分析(送檢驗科執行)': 'VBG',
+                        'Blood gas analysis_動脈血氣體分析(送檢驗科執行)': 'ABG',
+                        'Lactic Acid (lactate)': 'Lactate',
+                        'Procalcitonin(PCT)': 'PCT',
+                        'Sputum Culture + Sputum Routine aerobic culture': 'Sputum C+R',
+                        '抗酸性濃縮抹片染色+抗酸菌培養(未用藥)': 'AFB',
+                        'Pleural effusion culture (Aer & Anaerobic)': 'Pleural/C',
+                        'MTB PCR/RIF(抗藥基因)': 'TB(_)',
+                        'Blood culture (Aer,Anaerobic,Fungus)': 'B/C*1套',
+                        'Blood culture (for resin , Aer & Anaerobic)大人使用': 'ARD*1套',
+                        '抗原快篩 - 新型冠狀病毒抗原檢測SARS-CoV-2 Ag test': 'COVID-19(_)',
+                        'Inf A 流感核酸快篩': 'A型流感(_)',
+                        'Inf B 流感核酸快篩': 'B型流感(_)',
+                        'Mycoplasma pneumonia IgM (快速法)': 'Mycoplasma(_)',
+                        '肺炎披衣菌抗體IgM (快速法)': '肺炎披衣菌抗體(_)',
+                        '退伍役軍人症尿液抗原快速檢測': '退伍役軍人症(_)',
+                        'Pneumococcus Ag (urine) 尿液肺炎球菌抗原': '肺炎球菌抗原(_)',
+                        'K.U.B._AP': 'KUB',
+                        'Chest PA': 'CXR',
+                        'Chest AP': 'CXR',
+                        'E.K.G.(左)(限病房執行)': 'EKG',
+                        '超音波心臟圖 (心內)': '心臟超音波',
+                        '杜卜勒氏彩色心臟血流圖 (心內)': '心臟超音波',
+                        'Abdominal sonography腹部超音波(胃腸科)': '腹部超音波',
+                        'CT without / with contrast_Chest': 'Chest_CT',
+                        'CT without / with contrast_Abdomen': 'Abdomen_CT',
+                        'CT without contrast_Brain': 'Brain_CT',
+                        'MRI (with) contrast_Brain': 'Brain_MIR',
+                        'Urine routine examination': 'U/A',
+                        'Urine aerobic culture': 'U/C',
+                        'Salmonella,Shigella or other Pathogens culture': 'Salmonella(_)',
+                        'Stool Occult Blood(EIA/LIA) 糞便潛血免疫分析': 'Stool EIA(_/_)',
+                        '(on Foley)留置導尿 Urinal indwelling catheterlization(病房專用)': 'On Foley',
+                        '(ON NG TUBE)胃管插入Insertion of nasogastric tube': 'On NG',
+                        '(ICP)一般導尿 URINAL CATHETERLIZATION(病房專用)': '單次導尿',
+                        '(ON CVP)中央靜脈導管置入術 C.V.P. CATHETER INTUBATION': 'On CVP',
+                        '小量或留置灌腸': '灌腸',
+                        '胸腔穿刺 Thoracocentesis': '胸腔穿刺引流'
+                    };
+                    
+                    // 合併預設和自定義對照表
+                    medicalTermsMapping = { ...defaultMappings, ...data.customMappings };
+                    
+                    console.log(`✅ 成功載入自定義對照表：${Object.keys(data.customMappings).length} 條自定義項目`);
+                    console.log(`📊 總計：${Object.keys(medicalTermsMapping).length} 條術語對照（預設 + 自定義）`);
+                    
+                    // 顯示自定義載入成功訊息
+                    showCustomLoadSuccessMessage(data);
+                    
+                } else {
+                    throw new Error('JSON 檔案格式不正確：缺少 mappings 或 customMappings 欄位');
+                }
+                
                 isMappingsLoaded = true;
-                console.log(`✅ 已從外部檔案載入 ${Object.keys(medicalTermsMapping).length} 條術語對照`);
                 console.log(`📅 檔案版本：${data.version || '未知'}`);
                 console.log(`📅 最後更新：${data.lastUpdated || '未知'}`);
                 console.log('📋 載入的術語對照：', medicalTermsMapping);
-                
-                // 顯示載入成功訊息
-                showLoadSuccessMessage(data);
                 
                 // 載入自定義對照表
                 loadCustomMappingsFromStorage();
@@ -1210,6 +1274,70 @@
                     }
                 }, 500);
             }, 3000);
+        }
+        
+        // 顯示自定義載入成功訊息
+        function showCustomLoadSuccessMessage(data) {
+            // 創建成功訊息元素
+            const successMsg = document.createElement('div');
+            successMsg.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+                z-index: 10000;
+                font-family: 'Microsoft JhengHei', sans-serif;
+                font-size: 14px;
+                max-width: 350px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            const customCount = Object.keys(data.customMappings || {}).length;
+            const totalCount = 35 + customCount; // 預設35條 + 自定義
+            
+            successMsg.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <span style="font-size: 18px;">🔄</span>
+                    <strong>自定義對照表已載入</strong>
+                </div>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    <div>新增自定義：${customCount} 條</div>
+                    <div>總計條目：${totalCount} 條</div>
+                    <div>更新時間：${data.exportDate ? new Date(data.exportDate).toLocaleString('zh-TW') : '未知'}</div>
+                </div>
+            `;
+            
+            // 添加動畫樣式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(successMsg);
+            
+            // 4秒後自動消失
+            setTimeout(() => {
+                successMsg.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => {
+                    if (document.body.contains(successMsg)) {
+                        document.body.removeChild(successMsg);
+                    }
+                }, 500);
+            }, 4000);
         }
 
         function showTab(tabName) {
@@ -2334,7 +2462,7 @@
         
         function settingsFilterMappings() {
             const searchTerm = document.getElementById('settings_mapping_search').value.toLowerCase();
-            const allMappings = { ...settingsMedicalTermsMapping, ...settingsCustomMappings };
+            const allMappings = { ...medicalTermsMapping, ...settingsCustomMappings };
             
             if (!searchTerm) {
                 settingsDisplayMappings(allMappings);
@@ -2353,6 +2481,27 @@
         }
         
         function settingsExportMappings() {
+            // 匯出完整的對照表（預設+自定義）
+            const exportData = {
+                version: "1.0",
+                lastUpdated: new Date().toISOString(),
+                description: "醫療術語轉換對照表（預設+自定義）",
+                mappings: { ...medicalTermsMapping, ...settingsCustomMappings }
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `medical_terms_mapping_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            console.log('✅ 完整對照表已匯出');
+        }
+        
+        // 新增：只匯出自定義項目
+        function settingsExportCustomMappings() {
             const exportData = {
                 customMappings: settingsCustomMappings,
                 exportDate: new Date().toISOString(),
@@ -2364,10 +2513,10 @@
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = `medical_terms_mapping_${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `custom_mappings_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
             
-            console.log('✅ 對照表已匯出');
+            console.log('✅ 自定義對照表已匯出');
         }
         
         function settingsImportMappings() {
@@ -2478,7 +2627,31 @@
             console.log('🔄 手動重新載入外部術語對照表...');
             try {
                 await loadMedicalTermsMapping();
-                alert('✅ 外部術語對照表重新載入完成！\n請檢查 Console 查看詳細資訊。');
+                
+                // 顯示載入的內容
+                const loadedCount = Object.keys(medicalTermsMapping).length;
+                const customCount = Object.keys(customMappings).length;
+                
+                let message = `✅ 外部術語對照表重新載入完成！\n\n`;
+                message += `📊 載入統計：\n`;
+                message += `- 外部檔案：${loadedCount} 條\n`;
+                message += `- 自定義：${customCount} 條\n`;
+                message += `- 總計：${loadedCount + customCount} 條\n\n`;
+                message += `📋 外部檔案內容：\n`;
+                
+                // 顯示前5個項目作為範例
+                const sampleItems = Object.entries(medicalTermsMapping).slice(0, 5);
+                sampleItems.forEach(([key, value]) => {
+                    message += `• ${key} → ${value}\n`;
+                });
+                
+                if (Object.keys(medicalTermsMapping).length > 5) {
+                    message += `... 還有 ${Object.keys(medicalTermsMapping).length - 5} 條\n`;
+                }
+                
+                message += `\n請檢查 Console 查看完整詳細資訊。`;
+                
+                alert(message);
             } catch (error) {
                 console.error('❌ 重新載入失敗：', error);
                 alert('❌ 重新載入失敗：' + error.message);
