@@ -446,6 +446,8 @@
                 medicalTermsMapping = data.mappings || {};
                 isMappingsLoaded = true;
                 console.log(`✅ 已從外部檔案載入 ${Object.keys(medicalTermsMapping).length} 條術語對照`);
+                console.log(`📅 檔案版本：${data.version || '未知'}`);
+                console.log(`📅 最後更新：${data.lastUpdated || '未知'}`);
                 
                 // 載入自定義對照表
                 loadFromStorage();

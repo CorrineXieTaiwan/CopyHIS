@@ -976,6 +976,9 @@
                             <button type="button" class="btn btn-secondary" onclick="settingsImportMappings()" style="flex: 1;">
                                 📥 匯入對照表
                             </button>
+                            <button type="button" class="btn btn-secondary" onclick="reloadExternalMappings()" style="flex: 1;">
+                                🔄 重新載入外部檔案
+                            </button>
                         </div>
                         
                         <div class="form-section" style="background: rgba(255, 255, 255, 0.9); margin-top: 8px; padding: 15px 15px 8px 15px;">
@@ -1054,14 +1057,26 @@
         // 從外部 JSON 檔案載入術語對照表
         async function loadMedicalTermsMapping() {
             try {
+                console.log('🔄 開始載入外部術語對照表...');
                 const response = await fetch('./medical_terms_mapping.json');
+                console.log('📡 網路回應狀態：', response.status, response.statusText);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
+                
                 const data = await response.json();
+                console.log('📄 解析的 JSON 資料：', data);
+                
                 medicalTermsMapping = data.mappings || {};
                 isMappingsLoaded = true;
                 console.log(`✅ 已從外部檔案載入 ${Object.keys(medicalTermsMapping).length} 條術語對照`);
+                console.log(`📅 檔案版本：${data.version || '未知'}`);
+                console.log(`📅 最後更新：${data.lastUpdated || '未知'}`);
+                console.log('📋 載入的術語對照：', medicalTermsMapping);
+                
+                // 顯示載入成功訊息
+                showLoadSuccessMessage(data);
                 
                 // 載入自定義對照表
                 loadCustomMappingsFromStorage();
@@ -1071,6 +1086,9 @@
                     initializeSettings();
                 }
             } catch (error) {
+                console.error('❌ 載入外部術語對照表失敗：', error);
+                console.error('❌ 錯誤詳情：', error.message);
+                console.error('❌ 錯誤堆疊：', error.stack);
                 console.warn('⚠️ 無法載入外部術語對照表，使用預設值：', error);
                 // 使用預設的術語對照表
                 medicalTermsMapping = {
@@ -1131,6 +1149,67 @@
                 console.warn('⚠️ 無法載入自定義對照表：', error);
                 customMappings = {};
             }
+        }
+
+        // 顯示載入成功訊息
+        function showLoadSuccessMessage(data) {
+            // 創建成功訊息元素
+            const successMsg = document.createElement('div');
+            successMsg.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+                z-index: 10000;
+                font-family: 'Microsoft JhengHei', sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                animation: slideInRight 0.5s ease;
+            `;
+            
+            successMsg.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <span style="font-size: 18px;">✅</span>
+                    <strong>術語對照表已更新</strong>
+                </div>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    <div>版本：${data.version || '未知'}</div>
+                    <div>更新：${data.lastUpdated ? new Date(data.lastUpdated).toLocaleString('zh-TW') : '未知'}</div>
+                    <div>條目：${Object.keys(data.mappings || {}).length} 條</div>
+                </div>
+            `;
+            
+            // 添加動畫樣式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(successMsg);
+            
+            // 3秒後自動消失
+            setTimeout(() => {
+                successMsg.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => {
+                    if (document.body.contains(successMsg)) {
+                        document.body.removeChild(successMsg);
+                    }
+                }, 500);
+            }, 3000);
         }
 
         function showTab(tabName) {
@@ -2391,6 +2470,18 @@
             } catch (error) {
                 console.warn('⚠️ 無法取得使用者偏好設定：', error);
                 return {};
+            }
+        }
+
+        // 手動重新載入外部術語對照表
+        async function reloadExternalMappings() {
+            console.log('🔄 手動重新載入外部術語對照表...');
+            try {
+                await loadMedicalTermsMapping();
+                alert('✅ 外部術語對照表重新載入完成！\n請檢查 Console 查看詳細資訊。');
+            } catch (error) {
+                console.error('❌ 重新載入失敗：', error);
+                alert('❌ 重新載入失敗：' + error.message);
             }
         }
     </script>
