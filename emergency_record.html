@@ -584,6 +584,8 @@
             '抗原快篩 - 新型冠狀病毒抗原檢測SARS-CoV-2 Ag test': 'COVID-19(_)',
             'Inf A 流感核酸快篩': 'A型流感(_)',
             'Inf B 流感核酸快篩': 'B型流感(_)',
+            '流行性感冒A型病毒抗原  Influenza A Ag': 'A型流感(_)',
+            '流行性感冒B型病毒抗原  Influenza B Ag': 'B型流感(_)',
             'Mycoplasma pneumonia IgM (快速法)': 'Mycoplasma(_)',
             '肺炎披衣菌抗體IgM (快速法)': '肺炎披衣菌抗體(_)',
             '退伍役軍人症尿液抗原快速檢測': '退伍役軍人症(_)',
@@ -831,24 +833,49 @@
         function mergeBloodCultures(convertedLines) {
             const itemCount = {};
             const mergedResults = [];
+            const processedItems = new Set(); // 用於追蹤已處理的項目
+            
+            console.log('🔄 開始處理重複項目去除...');
             
             // 計算每個項目的出現次數
             convertedLines.forEach(item => {
                 if (item === 'B/C*1套') {
                     itemCount['B/C'] = (itemCount['B/C'] || 0) + 1;
+                    console.log(`📊 血液培養項目：B/C 累計 ${itemCount['B/C']} 次`);
                 } else if (item === 'ARD*1套') {
                     itemCount['ARD'] = (itemCount['ARD'] || 0) + 1;
+                    console.log(`📊 血液培養項目：ARD 累計 ${itemCount['ARD']} 次`);
+                } else if (item === 'CXR') {
+                    itemCount['CXR'] = (itemCount['CXR'] || 0) + 1;
+                    console.log(`📊 影像檢查項目：CXR 累計 ${itemCount['CXR']} 次`);
+                } else if (item === 'EKG') {
+                    itemCount['EKG'] = (itemCount['EKG'] || 0) + 1;
+                    console.log(`📊 心電圖項目：EKG 累計 ${itemCount['EKG']} 次`);
                 } else {
-                    // 非血液培養項目，直接加入結果
-                    mergedResults.push(item);
+                    // 檢查是否為重複項目（如流感檢測）
+                    if (!processedItems.has(item)) {
+                        mergedResults.push(item);
+                        processedItems.add(item);
+                        console.log(`✅ 加入項目：${item}`);
+                    } else {
+                        console.log(`🔄 跳過重複項目：${item}`);
+                    }
                 }
             });
             
-            // 將血液培養項目加入結果，並標示正確的套數
+            // 將需要計數的項目加入結果，並標示正確的次數
             for (const [key, count] of Object.entries(itemCount)) {
-                mergedResults.push(`${key}*${count}套`);
+                let resultItem;
+                if (key === 'B/C' || key === 'ARD') {
+                    resultItem = `${key}*${count}套`;
+                } else {
+                    resultItem = `${key}*${count}次`;
+                }
+                mergedResults.push(resultItem);
+                console.log(`📊 計數結果：${resultItem}`);
             }
             
+            console.log(`📋 最終結果：${mergedResults.join('、')}`);
             return mergedResults;
         }
 
