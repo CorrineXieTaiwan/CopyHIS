@@ -98,6 +98,8 @@
             display: flex;
         }
 
+
+
         .main-layout {
             display: flex;
             min-height: calc(100vh - 125px); /* 調整高度，扣除tabs的高度和margin */
@@ -109,7 +111,7 @@
 
         .left-panel {
             flex: 1;
-            min-width: 350px;
+            min-width: 300px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -119,7 +121,7 @@
 
         .right-panel {
             flex: 1;
-            min-width: 350px;
+            min-width: 550px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -392,15 +394,17 @@
         }
 
         .pipeline-table th:nth-child(5), .pipeline-table td:nth-child(5) {
-            width: 26%;
+            width: 18%;
         }
 
         .pipeline-table th:nth-child(6), .pipeline-table td:nth-child(6) {
-            width: 20%;
+            width: 28%;
         }
 
         .pipeline-table th {
             text-align: center;
+            white-space: nowrap;
+            writing-mode: horizontal-tb;
         }
 
         .pipeline-table th {
@@ -417,8 +421,8 @@
 
         .nursing-record {
             width: 100%;
-            min-height: 180px;
-            max-height: 300px;
+            min-height: 250px;
+            max-height: 400px;
             resize: vertical;
             font-family: inherit;
         }
@@ -901,11 +905,12 @@
 
                 <!-- 右側面板 -->
                 <div class="right-panel">
-                    <div class="form-section">
+                    <!-- 管路留置區域 - 加寬版本 -->
+                    <div class="form-section" style="min-width: 500px;">
                         <h3>管路留置</h3>
                         <p style="color: #6c757d; margin-bottom: 10px;">請從HIS系統的【管路管理】全部複製後，點選下方按鈕貼上內容即可。</p>
                         <button type="button" class="btn btn-pipeline" onclick="pastePipelineData()" style="width: 100%; margin-bottom: 15px;">貼上複製的管路</button>
-                        <table class="pipeline-table" id="pipeline_table">
+                        <table class="pipeline-table" id="pipeline_table" style="width: 100%;">
                             <thead>
                                 <tr>
                                     <th>管路名稱</th>
@@ -1007,9 +1012,9 @@
                             📊 系統資訊
                         </h4>
                         <div style="display: flex; flex-direction: column; gap: 8px; color: #6b7280; font-size: 0.9rem;">
-                            <div>更新日期：2025.07.20，版本：V1.2.3【開發者：CorrineXie】</div>
-                            <div>優化日誌：手術護理紀錄、護理計畫分類按鈕</div>
-                            <div>新增功能：上傳自動同步自定義對照表</div>
+                            <div>更新日期：2025.01.27，版本：V1.2.1【開發者：CorrineXie】</div>
+                            <div>優化日誌：手術護理紀錄、護理計畫評值</div>
+                            <div>新增功能：自動GitHub同步自定義對照表</div>
                         </div>
                     </div>
                 </div>
@@ -1373,18 +1378,28 @@
                         cell5.textContent = rowData.attachedMaterial;
                         
                         const cell6 = row.insertCell(5);
-                        const remarkInput = document.createElement('input');
-                        remarkInput.type = 'text';
-                        remarkInput.value = '';
-                        remarkInput.style.width = '100%';
-                        remarkInput.style.border = 'none';
-                        remarkInput.style.background = 'transparent';
-                        remarkInput.style.padding = '5px';
-                        remarkInput.style.color = '#475569';
-                        remarkInput.placeholder = '可編輯備註';
-                        remarkInput.onchange = updateNursingRecordFromTable;
-                        remarkInput.onkeyup = updateNursingRecordFromTable;
-                        cell6.appendChild(remarkInput);
+                        
+                        // 檢查是否有對應的備註選項
+                        if (pipelineNotesMapping[rowData.name]) {
+                            // 創建下拉選單
+                            const select = createPipelineNoteSelect(rowData.name, '');
+                            select.onchange = updateNursingRecordFromTable;
+                            cell6.appendChild(select);
+                        } else {
+                            // 創建文字輸入框
+                            const remarkInput = document.createElement('input');
+                            remarkInput.type = 'text';
+                            remarkInput.value = '';
+                            remarkInput.style.width = '100%';
+                            remarkInput.style.border = 'none';
+                            remarkInput.style.background = 'transparent';
+                            remarkInput.style.padding = '5px';
+                            remarkInput.style.color = '#475569';
+                            remarkInput.placeholder = '可編輯';
+                            remarkInput.onchange = updateNursingRecordFromTable;
+                            remarkInput.onkeyup = updateNursingRecordFromTable;
+                            cell6.appendChild(remarkInput);
+                        }
                     });
                     
                     updateNursingRecordFromTable();
@@ -1655,7 +1670,7 @@
                     remarkInput.style.background = 'transparent';
                     remarkInput.style.padding = '5px';
                     remarkInput.style.color = '#475569';
-                    remarkInput.placeholder = '可編輯備註';
+                    remarkInput.placeholder = '可編輯';
                     remarkInput.onchange = updateNursingRecordFromTable;
                     remarkInput.onkeyup = updateNursingRecordFromTable;
                     cell6.appendChild(remarkInput);
@@ -1754,7 +1769,18 @@
                         const position = cells[3].textContent.trim();
                         const attachedMaterial = cells[4].textContent.trim();
                         const remarkInput = cells[5].querySelector('input');
-                        const remark = remarkInput ? remarkInput.value.trim() : '';
+                        const remarkSelect = cells[5].querySelector('select');
+                        let remark = '';
+                        
+                        if (remarkSelect) {
+                            // 如果是下拉選單
+                            remark = remarkSelect.value.trim();
+                            console.log('🔍 讀取下拉選單值：', remark, '管路：', name, '選單元素：', remarkSelect);
+                        } else if (remarkInput) {
+                            // 如果是文字輸入框
+                            remark = remarkInput.value.trim();
+                            console.log('🔍 讀取文字輸入值：', remark, '管路：', name);
+                        }
                         
                         if (name) {
                             let desc = `${location}${position}${name}${size}`;
@@ -2057,6 +2083,34 @@
 
         // 自定義對照表
         let settingsCustomMappings = {}; 
+        
+        // 管路備註對照表 - 針對特定管路名稱提供備註選項
+        const pipelineNotesMapping = {
+            'Foley catheter': ['通暢', '阻塞', '血尿', '混濁', '有沉澱物', '需要更換', '固定良好', '鬆脫'],
+            'Nasogastric tube': ['通暢', '阻塞', '位置正確', '需要調整', '有胃液', '無胃液', '固定良好', '鬆脫'],
+            'Central venous catheter': ['通暢', '阻塞', '有回血', '無回血', '固定良好', '鬆脫', '有滲漏', '無滲漏'],
+            'Peripheral IV': ['通暢', '阻塞', '有回血', '無回血', '固定良好', '鬆脫', '有滲漏', '無滲漏', '需要更換'],
+            'Arterial line': ['通暢', '阻塞', '波形正常', '波形異常', '固定良好', '鬆脫', '有滲漏', '無滲漏'],
+            'Chest tube': ['通暢', '阻塞', '有氣泡', '無氣泡', '有引流液', '無引流液', '固定良好', '鬆脫'],
+            'Tracheostomy tube': ['通暢', '阻塞', '固定良好', '鬆脫', '有分泌物', '無分泌物', '需要更換'],
+            'Endotracheal tube': ['通暢', '阻塞', '固定良好', '鬆脫', '位置正確', '需要調整', '有分泌物'],
+            'PICC line': ['通暢', '阻塞', '有回血', '無回血', '固定良好', '鬆脫', '有滲漏', '無滲漏'],
+            'Hemodialysis catheter': ['通暢', '阻塞', '有回血', '無回血', '固定良好', '鬆脫', '專用透析'],
+            'Pleural drain': ['通暢', '阻塞', '有氣泡', '無氣泡', '有引流液', '無引流液', '固定良好'],
+            'Abdominal drain': ['通暢', '阻塞', '有引流液', '無引流液', '固定良好', '鬆脫', '有滲漏'],
+            'Biliary drain': ['通暢', '阻塞', '有膽汁', '無膽汁', '固定良好', '鬆脫', '有滲漏'],
+            'Ureteral stent': ['通暢', '阻塞', '固定良好', '鬆脫', '有血尿', '無血尿'],
+            'Nephrostomy tube': ['通暢', '阻塞', '有尿液', '無尿液', '固定良好', '鬆脫', '有滲漏'],
+            'Gastrostomy tube': ['通暢', '阻塞', '有胃液', '無胃液', '固定良好', '鬆脫', '有滲漏'],
+            'Jejunostomy tube': ['通暢', '阻塞', '有腸液', '無腸液', '固定良好', '鬆脫', '有滲漏'],
+            'Colostomy': ['通暢', '阻塞', '有糞便', '無糞便', '固定良好', '鬆脫', '有滲漏'],
+            'Ileostomy': ['通暢', '阻塞', '有腸液', '無腸液', '固定良好', '鬆脫', '有滲漏'],
+            'Urostomy': ['通暢', '阻塞', '有尿液', '無尿液', '固定良好', '鬆脫', '有滲漏'],
+            // 新增的三個管路項目
+            'J-P 引流': ['採自然引流', '接EMS-1cmH2O使用', '接EMS-5cmH2O使用', '接EMS-10cmH2O使用', '接EMS-15cmH2O使用'],
+            '豬尾巴導管': ['採自然引流', '接EMS-1cmH2O使用', '接EMS-5cmH2O使用', '接EMS-10cmH2O使用', '接EMS-15cmH2O使用'],
+            '胸管': ['採自然引流', '接EMS-1cmH2O使用', '接EMS-5cmH2O使用', '接EMS-10cmH2O使用', '接EMS-15cmH2O使用']
+        };
         
         // GitHub自動同步設定
         const GITHUB_SYNC_URL = 'https://raw.githubusercontent.com/CorrineXieTaiwan/CopyHIS/refs/heads/main/custom_mappings.json';
@@ -2431,6 +2485,97 @@
                 return {};
             }
         }
+
+        // 簡化的管路備註函數
+        function createPipelineNoteSelect(pipelineName, currentValue = '') {
+            const select = document.createElement('select');
+            select.style.cssText = `
+                width: 100%;
+                padding: 4px 8px;
+                border: 1px solid #d1d5db;
+                border-radius: 4px;
+                font-size: 0.9rem;
+                background: white;
+            `;
+            
+            // 添加預設選項
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '請選擇備註';
+            select.appendChild(defaultOption);
+            
+            // 根據管路名稱添加對應的備註選項
+            const notes = pipelineNotesMapping[pipelineName] || [];
+            notes.forEach(note => {
+                const option = document.createElement('option');
+                option.value = note;
+                option.textContent = note;
+                if (currentValue === note) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            // 添加自定義輸入選項
+            const customOption = document.createElement('option');
+            customOption.value = 'custom';
+            customOption.textContent = '自定義輸入...';
+            select.appendChild(customOption);
+            
+            // 簡化的選擇變化監聽
+            select.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    const customInput = prompt('請輸入自定義備註：');
+                    if (customInput && customInput.trim()) {
+                        const customValue = customInput.trim();
+                        
+                        // 創建新的選項來保存自定義值
+                        const newOption = document.createElement('option');
+                        newOption.value = customValue;
+                        newOption.textContent = customValue;
+                        newOption.selected = true;
+                        
+                        // 移除舊的自定義選項
+                        const oldCustomOption = this.querySelector('option[value="custom"]');
+                        if (oldCustomOption) {
+                            this.removeChild(oldCustomOption);
+                        }
+                        
+                        // 添加新的自定義選項
+                        this.appendChild(newOption);
+                        
+                        // 設置值
+                        this.value = customValue;
+                        
+                        // 更新護理紀錄
+                        updateNursingRecordFromTable();
+                    } else {
+                        this.value = '';
+                    }
+                } else {
+                    updateNursingRecordFromTable();
+                }
+            });
+            
+            return select;
+        }
+
+
+
+        // 簡單的測試函數
+        function testCustomInput() {
+            console.log('🧪 測試自定義輸入功能...');
+            const selects = document.querySelectorAll('#pipeline_tbody select');
+            console.log(`✅ 找到 ${selects.length} 個下拉選單`);
+            console.log('📝 測試步驟：');
+            console.log('1. 選擇任何一個下拉選單');
+            console.log('2. 選擇「自定義輸入...」選項');
+            console.log('3. 在彈出的輸入框中輸入您的自定義備註');
+            console.log('4. 確認後，下拉選單會顯示您的自定義內容');
+            console.log('5. 護理紀錄會即時更新顯示您的自定義內容');
+        }
+
+
     </script>
 </body>
 </html>
