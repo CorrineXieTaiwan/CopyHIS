@@ -651,7 +651,7 @@
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = `醫療術語對照表_${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `custom_mappings_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
             
             console.log('✅ 對照表已匯出');
