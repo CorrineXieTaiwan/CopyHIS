@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>護理紀錄快捷器</title>
+    <link rel="icon" type="image/x-icon" href="icon_result (1).ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f4f8 100%);
+            min-height: 100vh;
+            min-width: 850px;
+            padding: 10px;
+            margin: 0;
+            overflow-x: auto;
+        }
+
+        .container {
+            min-width: 830px;
+            width: 100%;
+            height: calc(100vh - 20px);
+            margin: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+
+
+        .tabs {
+            display: flex;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin-top: 15px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: rgba(226, 232, 240, 0.3);
+            color: #475569;
+        }
+
+        .tab.active {
+            color: white;
+            background: linear-gradient(135deg, rgba(107, 114, 142, 0.95) 0%, rgba(139, 146, 174, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 0;
+            animation: fadeIn 0.3s ease;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 125px); /* 調整高度，扣除tabs的高度和margin */
+            gap: 20px;
+            padding: 20px;
+            min-width: 790px;
+            overflow: visible;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: visible;
+            padding: 0 10px;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: visible;
+            padding: 0 10px;
+        }
+
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            background: rgba(248, 250, 252, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 3px solid rgba(99, 102, 241, 0.4);
+            border: 1px solid rgba(226, 232, 240, 0.3);
+        }
+
+        .form-section h3 {
+            color: #334155;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        input, select, textarea {
+            padding: 6px 12px;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(248, 250, 252, 0.4) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            color: #475569;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.7);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.7) 100%);
+        }
+
+        .consciousness-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .consciousness-inputs input {
+            width: 50px;
+            text-align: center;
+            min-width: 45px;
+        }
+
+        .consciousness-inputs > span {
+            white-space: nowrap;
+        }
+
+        .drug-row {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.3) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(226, 232, 240, 0.25);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-20px); }
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(139, 92, 246, 1) 100%);
+        }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.8);
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.9);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
+        .btn-success {
+            background: rgba(34, 197, 94, 0.8);
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-success:hover {
+            background: rgba(22, 163, 74, 0.9);
+        }
+
+        .btn-pipeline {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .btn-pipeline:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .oxygen-params {
+            display: none;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.3) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(226, 232, 240, 0.25);
+            border-radius: 16px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .oxygen-params.show {
+            display: block;
+        }
+
+        .pipeline-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 250, 252, 0.5) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(226, 232, 240, 0.25);
+            display: block;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .pipeline-table thead,
+        .pipeline-table tbody {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .pipeline-table::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pipeline-table::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.5);
+            border-radius: 10px;
+        }
+
+        .pipeline-table::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 10px;
+        }
+
+        .pipeline-table::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+        }
+
+        .pipeline-table th,
+        .pipeline-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.3);
+            color: #475569;
+        }
+
+        .pipeline-table th:nth-child(1), .pipeline-table td:nth-child(1) {
+            width: 18%;
+        }
+
+        .pipeline-table th:nth-child(2), .pipeline-table td:nth-child(2) {
+            width: 12%;
+        }
+
+        .pipeline-table th:nth-child(3), .pipeline-table td:nth-child(3) {
+            width: 12%;
+        }
+
+        .pipeline-table th:nth-child(4), .pipeline-table td:nth-child(4) {
+            width: 12%;
+        }
+
+        .pipeline-table th:nth-child(5), .pipeline-table td:nth-child(5) {
+            width: 26%;
+        }
+
+        .pipeline-table th:nth-child(6), .pipeline-table td:nth-child(6) {
+            width: 20%;
+        }
+
+        .pipeline-table th {
+            text-align: center;
+        }
+
+        .pipeline-table th {
+            background: linear-gradient(135deg, rgba(71, 85, 105, 0.9) 0%, rgba(100, 116, 139, 0.85) 100%) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .pipeline-table tr:hover {
+            background: rgba(248, 250, 252, 0.7);
+        }
+
+        .nursing-record {
+            width: 100%;
+            min-height: 180px;
+            max-height: 300px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .right-panel .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .right-panel .button-group {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .building {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 2rem;
+            font-weight: 300;
+            padding: 100px 20px;
+            opacity: 0.7;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wound-input {
+            display: none;
+            margin-left: 10px;
+        }
+
+        .wound-input.show {
+            display: inline-block;
+        }
+
+
+
+
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                margin: 0;
+                border-radius: 10px;
+            }
+            
+            .main-layout {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+                height: auto;
+            }
+            
+            .tabs {
+                margin-top: 10px;
+            }
+            
+            .left-panel,
+            .right-panel {
+                overflow-y: visible;
+                padding: 0;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .drug-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .settings-content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* EVM輸入欄位在小螢幕的特殊處理 */
+            .consciousness-inputs {
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .consciousness-inputs input {
+                width: 45px;
+                min-width: 40px;
+            }
+        }
+
+        /* 極小螢幕 (手機豎向) */
+        @media (max-width: 480px) {
+            .consciousness-inputs {
+                gap: 6px;
+                justify-content: flex-start;
+            }
+            
+            .consciousness-inputs input {
+                width: 40px;
+                min-width: 35px;
+                font-size: 0.9rem;
+            }
+            
+            .consciousness-inputs > span {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 系統設定專用樣式 */
+        .settings-content-grid {
+            display: grid;
+            grid-template-columns: 500px 1fr;
+            gap: 30px;
+            padding: 20px;
+            min-height: 600px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .settings-left-column, .settings-right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .settings-mapping-item {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .settings-mapping-item:hover {
+            background-color: #f9fafb;
+        }
+
+
+
+        /* 右上角系統資訊圖標 */
+        .system-info-icon {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .system-info-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .system-info-icon img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        /* 系統資訊模態視窗 */
+        .system-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .system-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            text-align: center;
+        }
+
+        .system-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .system-modal-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .system-modal-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .system-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .system-info-label {
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .system-info-value {
+            color: #64748b;
+            font-family: 'Courier New', monospace;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .system-info-icon {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .system-info-icon img {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .system-modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .system-modal-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .system-modal-header img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .system-info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 右上角系統資訊圖標 -->
+        <div class="system-info-icon" onclick="showSystemInfo()">
+            <img src="icon_result (1).ico" alt="系統資訊" />
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('general')">一般護理紀錄</button>
+            <button class="tab" onclick="showTab('evaluation')">護理計畫評值</button>
+            <button class="tab" onclick="showTab('surgical')">手術護理紀錄</button>
+            <button class="tab" onclick="showTab('emergency')">急診入院紀錄</button>
+            <button class="tab" onclick="showTab('transfer')">單位轉入摘要</button>
+            <button class="tab" onclick="showTab('upload')">檔案上傳區</button>
+            <button class="tab" onclick="showSystemSettings()">系統設定</button>
+        </div>
+
+        <!-- 一般護理紀錄 -->
+        <div id="general" class="tab-content active">
+            <div class="main-layout">
+                <!-- 左側面板 -->
+                <div class="left-panel">
+                    <div class="form-section">
+                        <h3>病人狀態</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>病人意識：</label>
+                                <div class="consciousness-inputs">
+                                    <span>E：</span><input type="text" id="consciousness_e" maxlength="2" style="width: 60px;">
+                                    <span>V：</span><input type="text" id="consciousness_v" maxlength="2" style="width: 60px;">
+                                    <span>M：</span><input type="text" id="consciousness_m" maxlength="2" style="width: 60px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="min-width: 80px;">狀態：</label>
+                                <select id="patient_status" style="flex: 1; min-width: 200px;">
+                                    <option value="">請選擇</option>
+                                    <option value="臥床休息">臥床休息</option>
+                                    <option value="採半坐臥休息">採半坐臥休息</option>
+                                    <option value="站立於床邊">站立於床邊</option>
+                                    <option value="坐於椅子上">坐於椅子上</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="min-width: 80px;">床邊儀器：</label>
+                                <select id="bedside_device" style="flex: 1; min-width: 200px;">
+                                    <option value="">請選擇</option>
+                                    <option value="三合一生理監視器使用中">三合一生理監視器使用中</option>
+                                    <option value="血氧濃度監測器使用中">血氧濃度監測器使用中</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="min-width: 80px;">照顧者：</label>
+                                <select id="caregiver" style="flex: 1; min-width: 200px;">
+                                    <option value="">請選擇</option>
+                                    <option value="獨自一人於病室無照顧者陪伴">獨自一人於病室無照顧者陪伴</option>
+                                    <option value="家屬伴">家屬伴</option>
+                                    <option value="看護伴">看護伴</option>
+                                    <option value="外傭伴">外傭伴</option>
+                                    <option value="友人伴">友人伴</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="checkbox-group" style="width: 100%;">
+                                <input type="checkbox" id="wound_checkbox" onchange="toggleWoundInput()">
+                                <label for="wound_checkbox" style="min-width: 80px;">身上傷口：</label>
+                                <input type="text" id="wound_input" class="wound-input" placeholder="請描述傷口狀況" style="flex: 1; min-width: 200px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>氧氣系統</h3>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="min-width: 80px;">氧氣裝置：</label>
+                                <select id="oxygen_device" onchange="toggleOxygenParams()" style="flex: 1; min-width: 200px;">
+                                    <option value="">請選擇</option>
+                                    <option value="Nasal Cannula">Nasal Cannula</option>
+                                    <option value="Simple Mask">Simple Mask</option>
+                                    <option value="Inspiron Mask">Inspiron Mask</option>
+                                    <option value="Venturi Mask">Venturi Mask</option>
+                                    <option value="Non-Rebreathing Mask">Non-Rebreathing Mask</option>
+                                    <option value="Oxy-Mask">Oxy-Mask</option>
+                                    <option value="HFNC">HFNC</option>
+                                    <option value="BiPAP">BiPAP</option>
+                                    <option value="CPAP">CPAP</option>
+                                    <option value="Tracheostomy Mask">Tracheostomy Mask</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label style="min-width: 80px;">氧氣濃度：</label>
+                                <select id="oxygen_flow" style="flex: 1; min-width: 150px;">
+                                    <option value="">請選擇</option>
+                                    <option value="1L/min">1L/min</option>
+                                    <option value="2L/min">2L/min</option>
+                                    <option value="3L/min">3L/min</option>
+                                    <option value="4L/min">4L/min</option>
+                                    <option value="5L/min">5L/min</option>
+                                    <option value="6L/min">6L/min</option>
+                                    <option value="7L/min">7L/min</option>
+                                    <option value="8L/min">8L/min</option>
+                                    <option value="9L/min">9L/min</option>
+                                    <option value="10L/min">10L/min</option>
+                                    <option value="11L/min">11L/min</option>
+                                    <option value="12L/min">12L/min</option>
+                                    <option value="13L/min">13L/min</option>
+                                    <option value="14L/min">14L/min</option>
+                                    <option value="15L/min">15L/min</option>
+                                    <option value="小FULL">小FULL</option>
+                                    <option value="大FULL">大FULL</option>
+                                </select>
+                                <div class="form-group" id="oxygen_percent_group" style="display: none; margin-left: 10px;">
+                                    <input type="text" id="oxygen_percent" placeholder="百分比" style="width: 80px;">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="oxygen_params" class="oxygen-params">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="min-width: 60px;">FiO2：</label>
+                                    <input type="text" id="param_fio2" style="width: 80px;">
+                                    <span>%</span>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="min-width: 60px;">Mode：</label>
+                                    <input type="text" id="param_mode" style="width: 80px;">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="min-width: 60px;">PC：</label>
+                                    <input type="text" id="param_pc" style="width: 80px;">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="min-width: 60px;">PEEP：</label>
+                                    <input type="text" id="param_peep" style="width: 80px;">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>滴注中藥物</h3>
+                        <button type="button" class="btn btn-pipeline" onclick="addDrugRow()" style="margin-bottom: 15px;">+新增滴注中藥物</button>
+                        <div id="drug_container"></div>
+                    </div>
+                </div>
+
+                <!-- 右側面板 -->
+                <div class="right-panel">
+                    <div class="form-section">
+                        <h3>管路留置</h3>
+                        <p style="color: #6c757d; margin-bottom: 10px;">請從HIS系統的【管路管理】全部複製後，點選下方按鈕貼上內容即可。</p>
+                        <button type="button" class="btn btn-pipeline" onclick="pastePipelineData()" style="width: 100%; margin-bottom: 15px;">貼上複製的管路</button>
+                        <table class="pipeline-table" id="pipeline_table">
+                            <thead>
+                                <tr>
+                                    <th>管路名稱</th>
+                                    <th>尺寸</th>
+                                    <th>位置</th>
+                                    <th>部位</th>
+                                    <th>附屬耗材</th>
+                                    <th>備註</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipeline_tbody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>護理紀錄</h3>
+                        <textarea id="nursing_record" class="nursing-record" placeholder="護理紀錄將自動生成在此..."></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" onclick="generateRecord()">✨ 生成紀錄</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearAllFields()">🗑️ 清除</button>
+                        <button type="button" class="btn btn-success" onclick="copyRecord()">📋 複製</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他分頁 -->
+        <div id="evaluation" class="tab-content">
+            <div class="building">建構中</div>
+        </div>
+
+        <div id="surgical" class="tab-content">
+            <div class="building">建構中</div>
+        </div>
+
+        <div id="emergency" class="tab-content">
+            <iframe id="emergency_frame" src="emergency_record.html" style="width: 100%; height: 100%; border: none; border-radius: 12px; background: transparent;"></iframe>
+        </div>
+
+        <div id="transfer" class="tab-content">
+            <div class="building">建構中</div>
+        </div>
+
+        <div id="upload" class="tab-content">
+            <div class="building">建構中</div>
+        </div>
+
+        <div id="settings" class="tab-content">
+            <div class="settings-content-grid">
+                <!-- 左側區域 -->
+                <div class="settings-left-column">
+                    <div class="form-section" style="display: flex; flex-direction: column;">
+                        <h3>術語對照表管理</h3>
+                        <p style="color: #6c757d; margin-bottom: 15px; font-size: 0.9rem;">
+                            管理醫療術語轉換規則，支援新增、編輯、刪除對照表項目
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-pipeline" onclick="settingsAddNewMapping()" style="flex: 1;">
+                                ➕ 新增術語
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="settingsExportMappings()" style="flex: 1;">
+                                📤 匯出對照表
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="settingsImportMappings()" style="flex: 1;">
+                                📥 匯入對照表
+                            </button>
+                        </div>
+                        
+                        <div class="form-section" style="background: rgba(255, 255, 255, 0.9); margin-top: 8px; padding: 15px 15px 8px 15px;">
+                            <h4>新增/編輯規則：</h4>
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; margin-bottom: 5px; color: #475569; font-weight: 500;">原始術語：</label>
+                                <input type="text" id="settings_original_term" placeholder="例如：Blood gas analysis_動脈血氣體分析" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #475569; font-weight: 500;">轉換後縮寫：</label>
+                                <input type="text" id="settings_converted_term" placeholder="例如：ABG" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-bottom: 0px;">
+                                <button type="button" class="btn btn-pipeline" onclick="settingsSaveMappingRule()" style="flex: 1;">
+                                    💾 儲存規則
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="settingsClearMappingForm()" style="flex: 1;">
+                                    🗑️ 清除表單
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 系統資訊區塊 -->
+                    <div style="background: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.5); margin-top: -30px;">
+                        <h4 style="color: #374151; margin-bottom: 10px; font-size: 1rem;">
+                            📊 系統資訊
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 8px; color: #6b7280; font-size: 0.9rem;">
+                            <div>更新日期：2025.07.05，版本：V1.2.0【開發者：CorrineXie】</div>
+                            <div>優化日誌：手術護理紀錄、護理計畫評值</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側區域 -->
+                <div class="settings-right-column">
+                    <div class="form-section" style="height: 580px; display: flex; flex-direction: column; width: 100%; box-sizing: border-box;">
+                        <h3>目前對照表</h3>
+                        <p style="color: #6c757d; margin-bottom: 10px; font-size: 0.85rem;">
+                            點擊項目可以編輯，雙擊可以刪除
+                        </p>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" id="settings_mapping_search" placeholder="🔍 搜尋術語..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;" oninput="settingsFilterMappings()">
+                        </div>
+                        
+                        <div id="settings_mappings_list" style="height: 460px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; background: white; width: 100%; box-sizing: border-box;">
+                            <!-- 對照表項目將在這裡顯示 -->
+                        </div>
+                        
+                        <div style="margin-top: 8px; padding: 8px; background: rgba(249, 250, 251, 0.8); border-radius: 6px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #6b7280; font-size: 0.9rem;">
+                                    總計 <span id="settings_mappings_count">0</span> 條對照規則
+                                </span>
+                                <button type="button" class="btn btn-danger" onclick="settingsResetToDefault()" style="font-size: 0.8rem; padding: 6px 12px;">
+                                    🔄 重置為預設
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let drugCounter = 0;
+
+        // 全域變數：術語對照表
+        let medicalTermsMapping = {};
+        let customMappings = {};
+        let isMappingsLoaded = false;
+
+        // 從外部 JSON 檔案載入術語對照表
+        async function loadMedicalTermsMapping() {
+            try {
+                const response = await fetch('./medical_terms_mapping.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                medicalTermsMapping = data.mappings || {};
+                isMappingsLoaded = true;
+                console.log(`✅ 已從外部檔案載入 ${Object.keys(medicalTermsMapping).length} 條術語對照`);
+                
+                // 載入自定義對照表
+                loadCustomMappingsFromStorage();
+                
+                // 如果系統設定頁面已開啟，重新初始化
+                if (document.getElementById('settings').classList.contains('active')) {
+                    initializeSettings();
+                }
+            } catch (error) {
+                console.warn('⚠️ 無法載入外部術語對照表，使用預設值：', error);
+                // 使用預設的術語對照表
+                medicalTermsMapping = {
+                    'Blood gas analysis_靜脈血氣體分析(送檢驗科執行)': 'VBG',
+                    'Blood gas analysis_動脈血氣體分析(送檢驗科執行)': 'ABG',
+                    'Lactic Acid (lactate)': 'Lactate',
+                    'Procalcitonin(PCT)': 'PCT',
+                    'Sputum Culture + Sputum Routine aerobic culture': 'Sputum C+R',
+                    '抗酸性濃縮抹片染色+抗酸菌培養(未用藥)': 'AFB',
+                    'Pleural effusion culture (Aer & Anaerobic)': 'Pleural/C',
+                    'MTB PCR/RIF(抗藥基因)': 'TB(_)',
+                    'Blood culture (Aer,Anaerobic,Fungus)': 'B/C*1套',
+                    'Blood culture (for resin , Aer & Anaerobic)大人使用': 'ARD*1套',
+                    '抗原快篩 - 新型冠狀病毒抗原檢測SARS-CoV-2 Ag test': 'COVID-19(_)',
+                    'Inf A 流感核酸快篩': 'A型流感(_)',
+                    'Inf B 流感核酸快篩': 'B型流感(_)',
+                    'Mycoplasma pneumonia IgM (快速法)': 'Mycoplasma(_)',
+                    '肺炎披衣菌抗體IgM (快速法)': '肺炎披衣菌抗體(_)',
+                    '退伍役軍人症尿液抗原快速檢測': '退伍役軍人症(_)',
+                    'Pneumococcus Ag (urine) 尿液肺炎球菌抗原': '肺炎球菌抗原(_)',
+                    'K.U.B._AP': 'KUB',
+                    'Chest PA': 'CXR',
+                    'Chest AP': 'CXR',
+                    'E.K.G.(左)(限病房執行)': 'EKG',
+                    '超音波心臟圖 (心內)': '心臟超音波',
+                    '杜卜勒氏彩色心臟血流圖 (心內)': '心臟超音波',
+                    'Abdominal sonography腹部超音波(胃腸科)': '腹部超音波',
+                    'CT without / with contrast_Chest': 'Chest_CT',
+                    'CT without / with contrast_Abdomen': 'Abdomen_CT',
+                    'CT without contrast_Brain': 'Brain_CT',
+                    'MRI (with) contrast_Brain': 'Brain_MIR',
+                    'Urine routine examination': 'U/A',
+                    'Urine aerobic culture': 'U/C',
+                    'Salmonella,Shigella or other Pathogens culture': 'Salmonella(_)',
+                    'Stool Occult Blood(EIA/LIA) 糞便潛血免疫分析': 'Stool EIA(_/_)',
+                    '(on Foley)留置導尿 Urinal indwelling catheterlization(病房專用)': 'On Foley',
+                    '(ON NG TUBE)胃管插入Insertion of nasogastric tube': 'On NG',
+                    '(ICP)一般導尿 URINAL CATHETERLIZATION(病房專用)': '單次導尿',
+                    '(ON CVP)中央靜脈導管置入術 C.V.P. CATHETER INTUBATION': 'On CVP',
+                    '小量或留置灌腸': '灌腸',
+                    '胸腔穿刺 Thoracocentesis': '胸腔穿刺引流'
+                };
+                isMappingsLoaded = true;
+                loadCustomMappingsFromStorage();
+            }
+        }
+
+        // 載入自定義對照表
+        function loadCustomMappingsFromStorage() {
+            try {
+                const savedData = localStorage.getItem('medicalTermsMappings');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    customMappings = data.customMappings || {};
+                    console.log(`📂 已載入 ${Object.keys(customMappings).length} 條自定義對照規則`);
+                }
+            } catch (error) {
+                console.warn('⚠️ 無法載入自定義對照表：', error);
+                customMappings = {};
+            }
+        }
+
+        function showTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 顯示系統設定（需要密碼驗證）
+        function showSystemSettings() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                text-align: center;
+            `;
+            
+            modalContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                    <img src="icon_result (1).ico" alt="系統圖標" style="width: 32px; height: 32px;" />
+                    <h3 style="margin: 0; color: #334155; font-size: 1.3rem;">系統設定驗證</h3>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <input type="password" id="settings_password" placeholder="請輸入密碼" style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 8px;
+                        font-size: 1rem;
+                        text-align: center;
+                        box-sizing: border-box;
+                    " />
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <button id="verify_password_btn" style="
+                        width: 100%;
+                        padding: 12px 20px;
+                        background: #3b82f6;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 1rem;
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    " onmouseover="this.style.backgroundColor='#2563eb'" 
+                       onmouseout="this.style.backgroundColor='#3b82f6'">
+                        登入
+                    </button>
+                </div>
+                
+                <div id="password_message" style="
+                    margin-top: 15px;
+                    padding: 8px;
+                    border-radius: 6px;
+                    display: none;
+                    font-size: 0.9rem;
+                "></div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            const passwordInput = document.getElementById('settings_password');
+            const verifyBtn = document.getElementById('verify_password_btn');
+            const messageDiv = document.getElementById('password_message');
+            
+            // 預設密碼
+            const defaultPassword = '0988374168';
+            
+            passwordInput.focus();
+            
+            // 驗證密碼
+            function verifyPassword() {
+                const inputPassword = passwordInput.value.trim();
+                
+                if (!inputPassword) {
+                    showMessage('請輸入密碼！', 'error');
+                    return;
+                }
+                
+                if (inputPassword === defaultPassword) {
+                    showMessage('密碼正確！正在載入...', 'success');
+                    setTimeout(() => {
+                        document.body.removeChild(modal);
+                        
+                        // 顯示系統設定tab
+                        const contents = document.querySelectorAll('.tab-content');
+                        contents.forEach(content => content.classList.remove('active'));
+                        
+                        const tabs = document.querySelectorAll('.tab');
+                        tabs.forEach(tab => tab.classList.remove('active'));
+                        
+                        document.getElementById('settings').classList.add('active');
+                        
+                        // 找到系統設定按鈕並設為活動狀態
+                        const systemSettingsBtn = document.querySelector('button[onclick="showSystemSettings()"]');
+                        if (systemSettingsBtn) {
+                            systemSettingsBtn.classList.add('active');
+                        }
+                        
+                        // 初始化系統設定
+                        setTimeout(() => {
+                            initializeSettings();
+                        }, 100);
+                    }, 1000);
+                } else {
+                    showMessage('密碼錯誤！', 'error');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+            
+            // 顯示訊息
+            function showMessage(text, type) {
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = text;
+                
+                if (type === 'success') {
+                    messageDiv.style.background = '#d1fae5';
+                    messageDiv.style.color = '#065f46';
+                    messageDiv.style.border = '1px solid #10b981';
+                } else if (type === 'error') {
+                    messageDiv.style.background = '#fee2e2';
+                    messageDiv.style.color = '#991b1b';
+                    messageDiv.style.border = '1px solid #ef4444';
+                }
+                
+                setTimeout(() => {
+                    if (type === 'error') {
+                        messageDiv.style.display = 'none';
+                    }
+                }, 3000);
+            }
+            
+            // 事件監聽
+            verifyBtn.onclick = verifyPassword;
+            
+            // Enter鍵驗證
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+            
+            // 點擊背景關閉
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // ESC鍵關閉
+            document.addEventListener('keydown', function escHandler(e) {
+                if (e.key === 'Escape') {
+                    if (document.body.contains(modal)) {
+                        document.body.removeChild(modal);
+                    }
+                    document.removeEventListener('keydown', escHandler);
+                }
+            });
+        }
+
+        function toggleWoundInput() {
+            const checkbox = document.getElementById('wound_checkbox');
+            const input = document.getElementById('wound_input');
+            
+            if (checkbox.checked) {
+                input.classList.add('show');
+                input.focus();
+            } else {
+                input.classList.remove('show');
+                input.value = '';
+            }
+        }
+
+        function toggleOxygenParams() {
+            const device = document.getElementById('oxygen_device').value;
+            const paramsDiv = document.getElementById('oxygen_params');
+            const percentGroup = document.getElementById('oxygen_percent_group');
+            
+            paramsDiv.classList.remove('show');
+            percentGroup.style.display = 'none';
+            
+            document.getElementById('param_fio2').value = '';
+            document.getElementById('param_mode').value = '';
+            document.getElementById('param_pc').value = '';
+            document.getElementById('param_peep').value = '';
+            document.getElementById('oxygen_percent').value = '';
+            
+            if (device === 'HFNC' || device === 'BiPAP' || device === 'CPAP') {
+                paramsDiv.classList.add('show');
+            } else if (device === 'Inspiron Mask' || device === 'Venturi Mask' || device === 'Tracheostomy Mask') {
+                percentGroup.style.display = 'flex';
+            }
+        }
+
+        function addDrugRow() {
+            drugCounter++;
+            const container = document.getElementById('drug_container');
+            
+            const drugRow = document.createElement('div');
+            drugRow.className = 'drug-row';
+            drugRow.id = `drug_row_${drugCounter}`;
+            
+            drugRow.innerHTML = `
+                <div class="form-group">
+                    <label style="color: #475569; min-width: 80px;">藥物名稱：</label>
+                    <input type="text" id="drug_name_${drugCounter}" style="min-width: 200px;" placeholder="請輸入藥物名稱">
+                </div>
+                <div class="form-group" style="gap: 5px;">
+                    <label style="color: #475569; min-width: 60px;">滴數：</label>
+                    <input type="text" id="drug_speed_${drugCounter}" style="width: 50px;">
+                    <span style="color: #64748b;">ml/hr</span>
+                </div>
+                <button type="button" class="btn btn-danger" onclick="removeDrugRow(${drugCounter})" style="min-width: 60px; margin-left: 5px;">刪除</button>
+            `;
+            
+            container.appendChild(drugRow);
+        }
+
+        function removeDrugRow(id) {
+            const row = document.getElementById(`drug_row_${id}`);
+            if (row) {
+                row.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    row.remove();
+                }, 300);
+            }
+        }
+
+        function pastePipelineData() {
+            let processedPipelineData = null; // 暫存處理後的資料
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 80%;
+                max-height: 80%;
+                overflow: auto;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            `;
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">貼上HIS管路資料</h3>
+                <p style="margin-bottom: 15px; color: #6c757d;">請在下方文字框中貼上HIS管路表格資料，關閉視窗後將自動套用：</p>
+                <textarea id="pipeline_input" style="width: 100%; height: 300px; padding: 10px; border: 2px solid #e9ecef; border-radius: 6px; font-family: monospace; font-size: 12px;" placeholder="在此貼上HIS管路表格資料..."></textarea>
+                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div id="status_message" style="flex: 1; padding: 10px; border-radius: 6px; display: none; margin-right: 15px;"></div>
+                    <button id="cancel_btn" style="padding: 10px 20px; border: none; background: #6c757d; color: white; border-radius: 6px; cursor: pointer; min-width: 80px;">關閉</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            const textArea = document.getElementById('pipeline_input');
+            const statusDiv = document.getElementById('status_message');
+            textArea.focus();
+            
+            // 關閉視窗並套用資料的函數
+            function closeModalAndApplyData() {
+                // 將暫存的資料套用到實際的管路表格
+                if (processedPipelineData && processedPipelineData.length > 0) {
+                    const tbody = document.getElementById('pipeline_tbody');
+                    tbody.innerHTML = '';
+                    
+                    processedPipelineData.forEach(rowData => {
+                        const row = tbody.insertRow();
+                        
+                        const cell1 = row.insertCell(0);
+                        cell1.textContent = rowData.name;
+                        
+                        const cell2 = row.insertCell(1);
+                        cell2.textContent = rowData.size;
+                        
+                        const cell3 = row.insertCell(2);
+                        cell3.textContent = rowData.location;
+                        
+                        const cell4 = row.insertCell(3);
+                        cell4.textContent = rowData.position;
+                        
+                        const cell5 = row.insertCell(4);
+                        cell5.textContent = rowData.attachedMaterial;
+                        
+                        const cell6 = row.insertCell(5);
+                        const remarkInput = document.createElement('input');
+                        remarkInput.type = 'text';
+                        remarkInput.value = '';
+                        remarkInput.style.width = '100%';
+                        remarkInput.style.border = 'none';
+                        remarkInput.style.background = 'transparent';
+                        remarkInput.style.padding = '5px';
+                        remarkInput.style.color = '#475569';
+                        remarkInput.placeholder = '可編輯備註';
+                        remarkInput.onchange = updateNursingRecordFromTable;
+                        remarkInput.onkeyup = updateNursingRecordFromTable;
+                        cell6.appendChild(remarkInput);
+                    });
+                    
+                    updateNursingRecordFromTable();
+                    console.log(`✅ 管路資料已套用！共 ${processedPipelineData.length} 筆管路資料。`);
+                }
+                
+                // 關閉視窗
+                if (document.body.contains(modal)) {
+                    document.body.removeChild(modal);
+                }
+            }
+            
+            textArea.addEventListener('paste', function(e) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.background = '#fff3cd';
+                statusDiv.style.color = '#856404';
+                statusDiv.style.border = '1px solid #ffeaa7';
+                statusDiv.textContent = '🔄 偵測到貼上動作，正在解析...';
+                
+                setTimeout(() => {
+                    const inputData = textArea.value.trim();
+                    if (inputData) {
+                        console.log('🎯 自動偵測到貼上資料，開始解析...');
+                        
+                        try {
+                            statusDiv.textContent = '⚡ 正在解析管路資料...';
+                            
+                            // 解析資料但不直接套用到主表格
+                            processedPipelineData = parseHISPipelineData(inputData);
+                            
+                            if (processedPipelineData && processedPipelineData.length > 0) {
+                                statusDiv.style.background = '#d4edda';
+                                statusDiv.style.color = '#155724';
+                                statusDiv.style.border = '1px solid #c3e6cb';
+                                statusDiv.textContent = `✅ 完成！找到 ${processedPipelineData.length} 筆管路資料，將會自動關閉視窗`;
+                                
+                                // 2秒後自動關閉並套用資料
+                                setTimeout(() => {
+                                    if (document.body.contains(modal)) {
+                                        console.log('🚪 自動關閉視窗並套用管路資料');
+                                        closeModalAndApplyData();
+                                    }
+                                }, 2000);
+                                
+                            } else {
+                                statusDiv.style.background = '#f8d7da';
+                                statusDiv.style.color = '#721c24';
+                                statusDiv.style.border = '1px solid #f5c6cb';
+                                statusDiv.textContent = '⚠️ 未找到有效的管路資料';
+                            }
+                            
+                            console.log('✅ 解析完成！');
+                            
+                        } catch (error) {
+                            console.error('❌ 解析失敗：', error);
+                            statusDiv.style.background = '#f8d7da';
+                            statusDiv.style.color = '#721c24';
+                            statusDiv.style.border = '1px solid #f5c6cb';
+                            statusDiv.textContent = '❌ 解析失敗：' + error.message;
+                        }
+                    } else {
+                        statusDiv.style.display = 'none';
+                        console.log('⚠️ 貼上的資料為空');
+                    }
+                }, 50);
+            });
+            
+            // 關閉按鈕事件
+            document.getElementById('cancel_btn').onclick = () => {
+                closeModalAndApplyData();
+            };
+            
+            // 點擊背景關閉並套用資料
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    closeModalAndApplyData();
+                }
+            };
+            
+            // ESC鍵關閉並套用資料
+            document.addEventListener('keydown', function escHandler(e) {
+                if (e.key === 'Escape') {
+                    if (document.body.contains(modal)) {
+                        closeModalAndApplyData();
+                    }
+                    document.removeEventListener('keydown', escHandler);
+                }
+            });
+        }
+
+        // 新增：解析HIS管路資料並回傳結果陣列（不直接更新表格）
+        function parseHISPipelineData(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) {
+                console.log('❌ 資料格式不正確，行數不足');
+                return [];
+            }
+            
+            const parsedData = [];
+            const header = lines[0].split('\t');
+            const targetColumns = ['※管路', '管路尺寸', '※管路部位', '※管路位置', '附屬耗材'];
+            const columnIndexes = targetColumns.map(col => {
+                const index = header.findIndex(h => h.trim() === col);
+                return index >= 0 ? index : -1;
+            });
+            
+            console.log('標題行：', header);
+            console.log('目標欄位：', targetColumns);
+            console.log('找到的欄位索引：', columnIndexes);
+            
+            if (columnIndexes[0] === -1) {
+                console.log('❌ 找不到「※管路」欄位');
+                return [];
+            }
+            
+            let validRowCount = 0;
+            let lastPipelineData = null;
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (!line.trim()) {
+                    console.log(`第${i}行：空行，跳過`);
+                    continue;
+                }
+                
+                const cols = line.split('\t');
+                console.log(`第${i}行資料（共${cols.length}欄）：`, cols);
+                
+                const pipelineNameIndex = columnIndexes[0];
+                const attachedMaterialIndex = columnIndexes[4];
+                let pipelineName = '';
+                let attachedMaterial = '';
+                
+                if (pipelineNameIndex >= 0 && pipelineNameIndex < cols.length) {
+                    pipelineName = cols[pipelineNameIndex].trim();
+                }
+                
+                if (attachedMaterialIndex >= 0 && attachedMaterialIndex < cols.length) {
+                    attachedMaterial = cols[attachedMaterialIndex].trim();
+                }
+                
+                console.log(`第${i}行管路名稱：「${pipelineName}」，附屬耗材：「${attachedMaterial}」`);
+                
+                // 如果是主管路行
+                if (pipelineName && !pipelineName.includes('營養') && !pipelineName.includes('輸液袋')) {
+                    const pipelineData = {
+                        name: pipelineName,
+                        size: (columnIndexes[1] >= 0 && columnIndexes[1] < cols.length) ? cols[columnIndexes[1]].trim() : '',
+                        location: (columnIndexes[3] >= 0 && columnIndexes[3] < cols.length) ? cols[columnIndexes[3]].trim() : '',
+                        position: (columnIndexes[2] >= 0 && columnIndexes[2] < cols.length) ? cols[columnIndexes[2]].trim() : '',
+                        attachedMaterial: attachedMaterial
+                    };
+                    
+                    parsedData.push(pipelineData);
+                    lastPipelineData = pipelineData;
+                    validRowCount++;
+                    
+                    console.log(`✅ 成功解析主管路：${pipelineName} | ${pipelineData.size} | ${pipelineData.location} | ${pipelineData.position} | ${attachedMaterial}`);
+                } 
+                // 如果是附屬耗材獨立行
+                else if (!pipelineName && attachedMaterial && lastPipelineData) {
+                    const currentMaterial = lastPipelineData.attachedMaterial.trim();
+                    
+                    if (currentMaterial) {
+                        lastPipelineData.attachedMaterial = currentMaterial + '、' + attachedMaterial;
+                    } else {
+                        lastPipelineData.attachedMaterial = attachedMaterial;
+                    }
+                    
+                    console.log(`✅ 成功添加附屬耗材：${attachedMaterial} 到最後一個管路`);
+                } 
+                else if (pipelineName) {
+                    console.log(`⚠️ 跳過其他項目：${pipelineName}`);
+                } else {
+                    console.log(`❌ 第${i}行無有效資料`);
+                }
+            }
+            
+            console.log(`✅ 管路資料解析完成！共解析 ${validRowCount} 筆有效管路資料。`);
+            return parsedData;
+        }
+
+        function processPipelineData(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) {
+                console.log('❌ 資料格式不正確，行數不足');
+                return;
+            }
+            
+            const tbody = document.getElementById('pipeline_tbody');
+            tbody.innerHTML = '';
+            
+            const header = lines[0].split('\t');
+            const targetColumns = ['※管路', '管路尺寸', '※管路部位', '※管路位置', '附屬耗材'];
+            const columnIndexes = targetColumns.map(col => {
+                const index = header.findIndex(h => h.trim() === col);
+                return index >= 0 ? index : -1;
+            });
+            
+            console.log('標題行：', header);
+            console.log('目標欄位：', targetColumns);
+            console.log('找到的欄位索引：', columnIndexes);
+            
+            if (columnIndexes[0] === -1) {
+                console.log('❌ 找不到「※管路」欄位');
+                return;
+            }
+            
+            let validRowCount = 0;
+            let lastPipelineRow = null;
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                
+                if (!line.trim()) {
+                    console.log(`第${i}行：空行，跳過`);
+                    continue;
+                }
+                
+                const cols = line.split('\t');
+                console.log(`第${i}行資料（共${cols.length}欄）：`, cols);
+                
+                const pipelineNameIndex = columnIndexes[0];
+                const attachedMaterialIndex = columnIndexes[4];
+                let pipelineName = '';
+                let attachedMaterial = '';
+                
+                if (pipelineNameIndex >= 0 && pipelineNameIndex < cols.length) {
+                    pipelineName = cols[pipelineNameIndex].trim();
+                }
+                
+                if (attachedMaterialIndex >= 0 && attachedMaterialIndex < cols.length) {
+                    attachedMaterial = cols[attachedMaterialIndex].trim();
+                }
+                
+                console.log(`第${i}行管路名稱：「${pipelineName}」，附屬耗材：「${attachedMaterial}」`);
+                
+                // 如果是主管路行
+                if (pipelineName && !pipelineName.includes('營養') && !pipelineName.includes('輸液袋')) {
+                    const row = tbody.insertRow();
+                    lastPipelineRow = row;
+                    
+                    const cell1 = row.insertCell(0);
+                    cell1.textContent = pipelineName;
+                    
+                    const cell2 = row.insertCell(1);
+                    const size = (columnIndexes[1] >= 0 && columnIndexes[1] < cols.length) ? cols[columnIndexes[1]].trim() : '';
+                    cell2.textContent = size;
+                    
+                    const cell3 = row.insertCell(2);
+                    const location = (columnIndexes[3] >= 0 && columnIndexes[3] < cols.length) ? cols[columnIndexes[3]].trim() : '';
+                    cell3.textContent = location;
+                    
+                    const cell4 = row.insertCell(3);
+                    const position = (columnIndexes[2] >= 0 && columnIndexes[2] < cols.length) ? cols[columnIndexes[2]].trim() : '';
+                    cell4.textContent = position;
+                    
+                    const cell5 = row.insertCell(4);
+                    cell5.textContent = attachedMaterial;
+                    
+                    const cell6 = row.insertCell(5);
+                    const remarkInput = document.createElement('input');
+                    remarkInput.type = 'text';
+                    remarkInput.value = '';
+                    remarkInput.style.width = '100%';
+                    remarkInput.style.border = 'none';
+                    remarkInput.style.background = 'transparent';
+                    remarkInput.style.padding = '5px';
+                    remarkInput.style.color = '#475569';
+                    remarkInput.placeholder = '可編輯備註';
+                    remarkInput.onchange = updateNursingRecordFromTable;
+                    remarkInput.onkeyup = updateNursingRecordFromTable;
+                    cell6.appendChild(remarkInput);
+                    
+                    validRowCount++;
+                    
+                    console.log(`✅ 成功處理主管路：${pipelineName} | ${size} | ${location} | ${position} | ${attachedMaterial}`);
+                } 
+                // 如果是附屬耗材獨立行
+                else if (!pipelineName && attachedMaterial && lastPipelineRow) {
+                    const cell5 = lastPipelineRow.cells[4];
+                    const currentMaterial = cell5.textContent.trim();
+                    
+                    if (currentMaterial) {
+                        cell5.textContent = currentMaterial + '、' + attachedMaterial;
+                    } else {
+                        cell5.textContent = attachedMaterial;
+                    }
+                    
+                    console.log(`✅ 成功添加附屬耗材：${attachedMaterial} 到最後一個管路`);
+                } 
+                else if (pipelineName) {
+                    console.log(`⚠️ 跳過其他項目：${pipelineName}`);
+                } else {
+                    console.log(`❌ 第${i}行無有效資料`);
+                }
+            }
+            
+            if (validRowCount > 0) {
+                updateNursingRecordFromTable();
+                console.log(`✅ 管路資料處理完成！共處理 ${validRowCount} 筆有效管路資料。`);
+            } else {
+                console.log('❌ 未找到有效的管路資料');
+            }
+        }
+
+        function updateNursingRecordFromTable() {
+            // 當管路資訊更新時，重新生成完整的護理紀錄
+            generateRecord();
+        }
+
+        function generateRecord() {
+            // 收集所有資料
+            const data = {
+                consciousness: {
+                    e: document.getElementById('consciousness_e').value,
+                    v: document.getElementById('consciousness_v').value,
+                    m: document.getElementById('consciousness_m').value
+                },
+                status: document.getElementById('patient_status').value,
+                device: document.getElementById('bedside_device').value,
+                caregiver: document.getElementById('caregiver').value,
+                wound: {
+                    checked: document.getElementById('wound_checkbox').checked,
+                    description: document.getElementById('wound_input').value
+                },
+                oxygen: {
+                    device: document.getElementById('oxygen_device').value,
+                    flow: document.getElementById('oxygen_flow').value,
+                    percent: document.getElementById('oxygen_percent').value,
+                    params: {
+                        fio2: document.getElementById('param_fio2').value,
+                        mode: document.getElementById('param_mode').value,
+                        pc: document.getElementById('param_pc').value,
+                        peep: document.getElementById('param_peep').value
+                    }
+                },
+                drugs: []
+            };
+            
+            // 收集藥物資料
+            const drugRows = document.querySelectorAll('#drug_container .drug-row');
+            drugRows.forEach(row => {
+                const nameInput = row.querySelector('input[id^="drug_name_"]');
+                const speedInput = row.querySelector('input[id^="drug_speed_"]');
+                if (nameInput && speedInput && nameInput.value && speedInput.value) {
+                    data.drugs.push({
+                        name: nameInput.value,
+                        speed: speedInput.value
+                    });
+                }
+            });
+            
+            // 收集管路資訊
+            const tbody = document.getElementById('pipeline_tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const pipelineInfo = [];
+            
+            if (tbody && rows.length > 0) {
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 6) {
+                        const name = cells[0].textContent.trim();
+                        const size = cells[1].textContent.trim();
+                        const location = cells[2].textContent.trim();
+                        const position = cells[3].textContent.trim();
+                        const attachedMaterial = cells[4].textContent.trim();
+                        const remarkInput = cells[5].querySelector('input');
+                        const remark = remarkInput ? remarkInput.value.trim() : '';
+                        
+                        if (name) {
+                            let desc = `${location}${position}${name}${size}`;
+                            if (attachedMaterial) {
+                                desc += `接${attachedMaterial}`;
+                            }
+                            if (remark) {
+                                desc += `，${remark}`;
+                            }
+                            pipelineInfo.push(desc);
+                        }
+                    }
+                });
+            }
+            
+            // 按照指定順序生成護理紀錄
+            const recordParts = [];
+            
+            // 1. 意識狀態（如果有的話）
+            if (data.consciousness.e || data.consciousness.v || data.consciousness.m) {
+                recordParts.push(`意識 E${data.consciousness.e}V${data.consciousness.v}M${data.consciousness.m}`);
+            }
+            
+            // 2. 病人狀態
+            if (data.status) {
+                recordParts.push(data.status);
+            } else {
+                // 如果沒有狀態但沒有意識，加入預設狀態
+                if (!data.consciousness.e && !data.consciousness.v && !data.consciousness.m) {
+                    recordParts.push('狀態穩定');
+                }
+            }
+            
+            // 3. 氧氣系統
+            if (data.oxygen.device) {
+                let oxygenText = `使用${data.oxygen.device}`;
+                
+                const oxygenDetails = [];
+                if (data.oxygen.flow) {
+                    oxygenDetails.push(`氧氣濃度${data.oxygen.flow}`);
+                }
+                if (data.oxygen.percent) {
+                    oxygenDetails.push(`${data.oxygen.percent}%`);
+                }
+                
+                if (oxygenDetails.length > 0) {
+                    oxygenText += `，${oxygenDetails.join('，')}`;
+                }
+                
+                // 特殊設備參數
+                if (data.oxygen.device === 'HFNC' || data.oxygen.device === 'BiPAP' || data.oxygen.device === 'CPAP') {
+                    const params = [];
+                    if (data.oxygen.params.fio2) params.push(`FiO2 ${data.oxygen.params.fio2}%`);
+                    if (data.oxygen.params.mode) params.push(`Mode ${data.oxygen.params.mode}`);
+                    if (data.oxygen.params.pc) params.push(`PC ${data.oxygen.params.pc}`);
+                    if (data.oxygen.params.peep) params.push(`PEEP ${data.oxygen.params.peep}`);
+                    
+                    if (params.length > 0) {
+                        oxygenText += `（${params.join('，')}）`;
+                    }
+                }
+                
+                oxygenText += '，呼吸平順';
+                recordParts.push(oxygenText);
+            } else {
+                recordParts.push('未使用氧氣系統，呼吸平順');
+            }
+            
+            // 4. 床邊儀器
+            if (data.device) {
+                recordParts.push(`床邊放置${data.device}`);
+            }
+            
+            // 5. 管路資訊
+            if (pipelineInfo.length > 0) {
+                recordParts.push(`身上管路為${pipelineInfo.join('；')}`);
+            } else {
+                recordParts.push('身上無管路留置');
+            }
+            
+            // 6. 藥物治療
+            if (data.drugs.length > 0) {
+                if (data.drugs.length === 1) {
+                    recordParts.push(`現藥物滴注：${data.drugs[0].name} ${data.drugs[0].speed}ml/hr`);
+                } else {
+                    const drugList = data.drugs.map(drug => `${drug.name} ${drug.speed}ml/hr`);
+                    recordParts.push(`現藥物滴注：${drugList.join('；')}`);
+                }
+            }
+            
+            // 7. 身上傷口
+            if (data.wound.checked && data.wound.description) {
+                recordParts.push(`身上傷口：${data.wound.description}`);
+            }
+            
+            // 8. 照顧者
+            if (data.caregiver) {
+                recordParts.push(data.caregiver);
+            }
+            
+            // 9. 固定結尾（只有在有其他內容時才加入）
+            if (recordParts.length > 0) {
+                recordParts.push('雙側床欄使用，床輪固定良好，暫無不適主訴，予常規探視');
+            }
+            
+            // 組合成完整的護理紀錄
+            let finalRecord = '';
+            if (recordParts.length > 0) {
+                finalRecord = '現病人' + recordParts.join('，') + '。';
+            }
+            
+            // 直接設定護理紀錄
+            document.getElementById('nursing_record').value = finalRecord;
+        }
+
+        function clearAllFields() {
+            document.getElementById('consciousness_e').value = '';
+            document.getElementById('consciousness_v').value = '';
+            document.getElementById('consciousness_m').value = '';
+            document.getElementById('patient_status').value = '';
+            document.getElementById('bedside_device').value = '';
+            document.getElementById('caregiver').value = '';
+            document.getElementById('wound_checkbox').checked = false;
+            document.getElementById('wound_input').value = '';
+            document.getElementById('wound_input').classList.remove('show');
+            document.getElementById('oxygen_device').value = '';
+            document.getElementById('oxygen_flow').value = '';
+            document.getElementById('oxygen_percent').value = '';
+            document.getElementById('param_fio2').value = '';
+            document.getElementById('param_mode').value = '';
+            document.getElementById('param_pc').value = '';
+            document.getElementById('param_peep').value = '';
+            document.getElementById('oxygen_params').classList.remove('show');
+            document.getElementById('oxygen_percent_group').style.display = 'none';
+            document.getElementById('drug_container').innerHTML = '';
+            document.getElementById('pipeline_tbody').innerHTML = '';
+            document.getElementById('nursing_record').value = '';
+            console.log('✅ 所有欄位已清除');
+        }
+
+        // 顯示系統資訊模態視窗
+        function showSystemInfo() {
+            const modal = document.createElement('div');
+            modal.className = 'system-modal';
+            modal.innerHTML = `
+                <div class="system-modal-content">
+                    <button class="close-modal" onclick="closeSystemModal()">&times;</button>
+                    
+                    <div style="text-align: center; margin: 15px 0;">
+                        <img src="icon_result (1).ico" alt="系統圖標" style="width: 48px; height: 48px;" />
+                    </div>
+                    
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="corrinexie_qr.png" alt="開發者圖檔" style="max-width: 300px; max-height: 300px; border-radius: 18px;" />
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 點擊背景關閉模態視窗
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeSystemModal();
+                }
+            });
+        }
+
+        // 關閉系統資訊模態視窗
+        function closeSystemModal() {
+            const modal = document.querySelector('.system-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // ESC鍵關閉模態視窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSystemModal();
+            }
+        });
+
+        function copyRecord() {
+            const recordText = document.getElementById('nursing_record').value;
+            if (!recordText.trim()) {
+                console.log('⚠️ 沒有可複製的內容');
+                return;
+            }
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(recordText).then(() => {
+                    console.log('✅ 護理紀錄已複製到剪貼簿');
+                    
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ 已複製';
+                    btn.style.background = '#28a745';
+                    
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                    }, 1500);
+                    
+                }).catch(err => {
+                    console.error('複製失敗：', err);
+                    fallbackCopy(recordText);
+                });
+            } else {
+                fallbackCopy(recordText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                console.log('✅ 護理紀錄已複製到剪貼簿（備用方法）');
+                
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已複製';
+                btn.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 1500);
+                
+            } catch (err) {
+                console.log('❌ 複製失敗，請手動選取文字複製');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // 系統設定相關函數
+        // 自定義對照表
+        let settingsCustomMappings = {}; 
+        
+        // 初始化系統設定
+        function initializeSettings() {
+            settingsLoadFromStorage();
+            settingsInitializeMappings();
+        }
+        
+        // 更新系統資訊
+        function updateSystemInfo() {
+            try {
+                // 測試localStorage是否正常
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                
+                console.log('📊 系統狀態：正常運行');
+                
+            } catch (error) {
+                console.warn('⚠️ 系統狀態：儲存功能異常');
+            }
+        }
+        
+        // 在頁面載入後自動初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 確保頁面載入時默認顯示「一般護理紀錄」
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 設定默認的活動頁面
+            document.getElementById('general').classList.add('active');
+            document.querySelector('button[onclick="showTab(\'general\')"]').classList.add('active');
+            
+            // 載入外部術語對照表
+            loadMedicalTermsMapping().then(() => {
+                // 載入完成後初始化系統設定
+                initializeSettings();
+            });
+        });
+        
+        // 初始化顯示對照表
+        function settingsInitializeMappings() {
+            // 合併外部載入的術語對照表和自定義對照表
+            const allMappings = { ...medicalTermsMapping, ...settingsCustomMappings };
+            settingsDisplayMappings(allMappings);
+        }
+        
+        function settingsDisplayMappings(mappings) {
+            const container = document.getElementById('settings_mappings_list');
+            const count = Object.keys(mappings).length;
+            document.getElementById('settings_mappings_count').textContent = count;
+            
+            if (count === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af;">尚無對照規則</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const [original, converted] of Object.entries(mappings)) {
+                const isCustom = settingsCustomMappings.hasOwnProperty(original);
+                const itemClass = isCustom ? 'custom-mapping' : 'default-mapping';
+                const badge = isCustom ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">自定義</span>' : '<span style="background: #6b7280; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">預設</span>';
+                
+                html += `
+                    <div class="settings-mapping-item ${itemClass}" style="
+                        padding: 12px; 
+                        border-bottom: 1px solid #f3f4f6; 
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    " 
+                    onmouseover="this.style.backgroundColor='#f9fafb'" 
+                    onmouseout="this.style.backgroundColor='white'"
+                    onclick="settingsEditMapping('${original.replace(/'/g, "\\'")}', '${converted.replace(/'/g, "\\'")}')"
+                    ondblclick="settingsDeleteMapping('${original.replace(/'/g, "\\'")}')">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #374151; margin-bottom: 4px;">${original}</div>
+                                <div style="color: #059669; font-weight: 600;">→ ${converted}</div>
+                            </div>
+                            <div>${badge}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function settingsAddNewMapping() {
+            document.getElementById('settings_original_term').focus();
+        }
+        
+        function settingsSaveMappingRule() {
+            const original = document.getElementById('settings_original_term').value.trim();
+            const converted = document.getElementById('settings_converted_term').value.trim();
+            
+            if (!original || !converted) {
+                alert('請填寫完整的原始術語和轉換後縮寫！');
+                return;
+            }
+            
+            // 儲存到自定義對照表
+            settingsCustomMappings[original] = converted;
+            
+            // 更新顯示
+            settingsInitializeMappings();
+            
+            // 清除表單
+            settingsClearMappingForm();
+            
+            // 儲存到瀏覽器
+            settingsSaveToStorage();
+            
+            console.log(`✅ 已新增對照規則：${original} → ${converted}`);
+            
+            // 顯示成功訊息
+            const originalInput = document.getElementById('settings_original_term');
+            const convertedInput = document.getElementById('settings_converted_term');
+            const saveButton = document.querySelector('button[onclick="settingsSaveMappingRule()"]');
+            
+            // 輸入框邊框變綠
+            originalInput.style.borderColor = '#10b981';
+            convertedInput.style.borderColor = '#10b981';
+            
+            // 按鈕顯示成功狀態
+            const originalText = saveButton.innerHTML;
+            const originalBackground = saveButton.style.background;
+            
+            saveButton.innerHTML = '✅ OK!';
+            saveButton.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            saveButton.style.transform = 'scale(1.05)';
+            
+            setTimeout(() => {
+                // 恢復原始狀態
+                originalInput.style.borderColor = '#d1d5db';
+                convertedInput.style.borderColor = '#d1d5db';
+                saveButton.innerHTML = originalText;
+                saveButton.style.background = originalBackground;
+                saveButton.style.transform = '';
+            }, 2000);
+        }
+        
+        function settingsEditMapping(original, converted) {
+            document.getElementById('settings_original_term').value = original;
+            document.getElementById('settings_converted_term').value = converted;
+            
+            // 滾動到表單
+            document.getElementById('settings_original_term').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('settings_original_term').focus();
+        }
+        
+        function settingsDeleteMapping(original) {
+            if (!confirm(`確定要刪除「${original}」這條對照規則嗎？`)) {
+                return;
+            }
+            
+            // 只能刪除自定義的對照規則
+            if (settingsCustomMappings.hasOwnProperty(original)) {
+                delete settingsCustomMappings[original];
+                settingsInitializeMappings();
+                settingsSaveToStorage();
+                console.log(`✅ 已刪除對照規則：${original}`);
+            } else {
+                alert('無法刪除預設的對照規則，只能刪除自定義的規則！');
+            }
+        }
+        
+        function settingsClearMappingForm() {
+            document.getElementById('settings_original_term').value = '';
+            document.getElementById('settings_converted_term').value = '';
+        }
+        
+        function settingsFilterMappings() {
+            const searchTerm = document.getElementById('settings_mapping_search').value.toLowerCase();
+            const allMappings = { ...settingsMedicalTermsMapping, ...settingsCustomMappings };
+            
+            if (!searchTerm) {
+                settingsDisplayMappings(allMappings);
+                return;
+            }
+            
+            const filteredMappings = {};
+            for (const [original, converted] of Object.entries(allMappings)) {
+                if (original.toLowerCase().includes(searchTerm) || 
+                    converted.toLowerCase().includes(searchTerm)) {
+                    filteredMappings[original] = converted;
+                }
+            }
+            
+            settingsDisplayMappings(filteredMappings);
+        }
+        
+        function settingsExportMappings() {
+            const exportData = {
+                customMappings: settingsCustomMappings,
+                exportDate: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `medical_terms_mapping_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            console.log('✅ 對照表已匯出');
+        }
+        
+        function settingsImportMappings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        if (importData.customMappings) {
+                            const importCount = Object.keys(importData.customMappings).length;
+                            
+                            if (confirm(`即將匯入 ${importCount} 條對照規則，是否繼續？`)) {
+                                settingsCustomMappings = { ...settingsCustomMappings, ...importData.customMappings };
+                                settingsInitializeMappings();
+                                settingsSaveToStorage();
+                                alert(`✅ 成功匯入 ${importCount} 條對照規則！`);
+                            }
+                        } else {
+                            alert('❌ 檔案格式不正確！');
+                        }
+                    } catch (error) {
+                        alert('❌ 檔案解析失敗：' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        function settingsResetToDefault() {
+            if (!confirm('確定要重置為預設對照表嗎？這將清除所有自定義規則！')) {
+                return;
+            }
+            
+            settingsCustomMappings = {};
+            settingsInitializeMappings();
+            settingsSaveToStorage();
+            settingsClearMappingForm();
+            alert('✅ 已重置為預設對照表！');
+        }
+        
+        function settingsSaveToStorage() {
+            try {
+                const data = {
+                    customMappings: settingsCustomMappings,
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem('medicalTermsMappings', JSON.stringify(data));
+                console.log('💾 對照表已儲存到本地儲存');
+            } catch (error) {
+                console.warn('⚠️ 無法儲存到本地儲存：', error);
+            }
+        }
+        
+        function settingsLoadFromStorage() {
+            try {
+                const savedData = localStorage.getItem('medicalTermsMappings');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    settingsCustomMappings = data.customMappings || {};
+                    console.log('📂 已從本地儲存載入對照表');
+                }
+            } catch (error) {
+                console.warn('⚠️ 無法從本地儲存載入：', error);
+                settingsCustomMappings = {};
+            }
+        }
+
+        // 輔助函數：取得醫療術語對照表
+        function getMedicalTermsMapping() {
+            try {
+                const savedData = localStorage.getItem('medicalTermsMappings');
+                if (savedData) {
+                    return JSON.parse(savedData);
+                }
+                return {};
+            } catch (error) {
+                console.warn('⚠️ 無法取得醫療術語對照表：', error);
+                return {};
+            }
+        }
+
+        // 輔助函數：取得使用者偏好設定
+        function getUserPreferences() {
+            try {
+                const savedPrefs = localStorage.getItem('userPreferences');
+                if (savedPrefs) {
+                    return JSON.parse(savedPrefs);
+                }
+                return {};
+            } catch (error) {
+                console.warn('⚠️ 無法取得使用者偏好設定：', error);
+                return {};
+            }
+        }
+    </script>
+</body>
+</html>

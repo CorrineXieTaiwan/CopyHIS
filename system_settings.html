@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統設置</title>
+    <link rel="icon" type="image/x-icon" href="icon_result (1).ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f0f4f8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(107, 114, 142, 0.95) 0%, rgba(139, 146, 174, 0.9) 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            background: rgba(248, 250, 252, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 3px solid rgba(99, 102, 241, 0.4);
+            border: 1px solid rgba(226, 232, 240, 0.3);
+        }
+
+        .form-section h3 {
+            color: #334155;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .form-section h4 {
+            color: #334155;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-pipeline {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-pipeline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        input, select, textarea {
+            padding: 8px 12px;
+            border: 1px solid rgba(203, 213, 225, 0.5);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            color: #334155;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .mapping-item {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .mapping-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            display: none;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 右上角系統資訊圖標 */
+        .system-info-icon {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .system-info-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .system-info-icon img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        /* 系統資訊模態視窗 */
+        .system-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .system-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            text-align: center;
+        }
+
+        .system-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .system-modal-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .system-modal-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .system-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .system-info-label {
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .system-info-value {
+            color: #64748b;
+            font-family: 'Courier New', monospace;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .system-info-icon {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            
+            .system-info-icon img {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .system-modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .system-modal-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .system-modal-header img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .system-info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 右上角系統資訊圖標 -->
+        <div class="system-info-icon" onclick="showSystemInfo()">
+            <img src="icon_result (1).ico" alt="系統資訊" />
+        </div>
+        
+        <div class="header">
+            <h1>系統設置</h1>
+            <p>管理醫療術語轉換對照表</p>
+        </div>
+
+        <div class="content-grid">
+            <!-- 左側區域 -->
+            <div class="left-column">
+                <div class="form-section">
+                    <h3>術語對照表管理</h3>
+                    <p style="color: #6c757d; margin-bottom: 15px; font-size: 0.9rem;">
+                        管理醫療術語轉換規則，支援新增、編輯、刪除對照表項目
+                    </p>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-pipeline" onclick="addNewMapping()" style="flex: 1;">
+                            ➕ 新增術語對照
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="exportMappings()" style="flex: 1;">
+                            📤 匯出對照表
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="importMappings()" style="flex: 1;">
+                            📥 匯入對照表
+                        </button>
+                    </div>
+                    
+                    <div class="form-section" style="background: rgba(255, 255, 255, 0.9); margin-top: 15px;">
+                        <h4>新增/編輯規則：</h4>
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; color: #475569; font-weight: 500;">原始術語：</label>
+                            <input type="text" id="original_term" placeholder="例如：Blood gas analysis_動脈血氣體分析" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #475569; font-weight: 500;">轉換後縮寫：</label>
+                            <input type="text" id="converted_term" placeholder="例如：ABG" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-pipeline" onclick="saveMappingRule()" style="flex: 1;">
+                                💾 儲存規則
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="clearMappingForm()" style="flex: 1;">
+                                🗑️ 清除表單
+                            </button>
+                        </div>
+                        <div id="save_success_message" class="success-message">✅ 規則已成功儲存！</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側區域 -->
+            <div class="right-column">
+                <div class="form-section" style="flex: 1;">
+                    <h3>目前對照表</h3>
+                    <p style="color: #6c757d; margin-bottom: 10px; font-size: 0.85rem;">
+                        點擊項目可以編輯，雙擊可以刪除
+                    </p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="mapping_search" placeholder="🔍 搜尋術語..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;" oninput="filterMappings()">
+                    </div>
+                    
+                    <div id="mappings_list" style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; background: white;">
+                        <!-- 對照表項目將在這裡顯示 -->
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(249, 250, 251, 0.8); border-radius: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #6b7280; font-size: 0.9rem;">
+                                總計 <span id="mappings_count">0</span> 條對照規則
+                            </span>
+                            <button type="button" class="btn btn-danger" onclick="resetToDefault()" style="font-size: 0.8rem; padding: 6px 12px;">
+                                🔄 重置為預設
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全域變數：術語對照表
+        let medicalTermsMapping = {};
+        let customMappings = {};
+        let isMappingsLoaded = false;
+
+        // 從外部 JSON 檔案載入術語對照表
+        async function loadMedicalTermsMapping() {
+            try {
+                const response = await fetch('./medical_terms_mapping.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                medicalTermsMapping = data.mappings || {};
+                isMappingsLoaded = true;
+                console.log(`✅ 已從外部檔案載入 ${Object.keys(medicalTermsMapping).length} 條術語對照`);
+                
+                // 載入自定義對照表
+                loadFromStorage();
+                
+                // 初始化顯示
+                initializeMappings();
+            } catch (error) {
+                console.warn('⚠️ 無法載入外部術語對照表，使用預設值：', error);
+                // 使用預設的術語對照表
+                medicalTermsMapping = {
+                    'Blood gas analysis_靜脈血氣體分析(送檢驗科執行)': 'VBG',
+                    'Blood gas analysis_動脈血氣體分析(送檢驗科執行)': 'ABG',
+                    'Lactic Acid (lactate)': 'Lactate',
+                    'Procalcitonin(PCT)': 'PCT',
+                    'Sputum Culture + Sputum Routine aerobic culture': 'Sputum C+R',
+                    '抗酸性濃縮抹片染色+抗酸菌培養(未用藥)': 'AFB',
+                    'Pleural effusion culture (Aer & Anaerobic)': 'Pleural/C',
+                    'MTB PCR/RIF(抗藥基因)': 'TB(_)',
+                    'Blood culture (Aer,Anaerobic,Fungus)': 'B/C',
+                    'Blood culture (for resin , Aer & Anaerobic)大人使用': 'ARD*1套',
+                    '抗原快篩 - 新型冠狀病毒抗原檢測SARS-CoV-2 Ag test': 'COVID-19(_)',
+                    'Inf A 流感核酸快篩': 'A流感(_)',
+                    'Inf B 流感核酸快篩': 'B流感(_)',
+                    'Mycoplasma pneumonia IgM (快速法)': 'Mycoplasma(_)',
+                    '肺炎披衣菌抗體IgM (快速法)': '肺炎披衣菌抗體(_)',
+                    '退伍役軍人症尿液抗原快速檢測': '退伍役軍人症(_)',
+                    'Pneumococcus Ag (urine) 尿液肺炎球菌抗原': '肺炎球菌抗原(_)',
+                    'K.U.B._AP': 'KUB',
+                    'Chest PA': 'CXR',
+                    'Chest AP': 'CXR',
+                    'E.K.G.(左)(限病房執行)': 'EKG',
+                    '超音波心臟圖 (心內)': '心臟超音波',
+                    '杜卜勒氏彩色心臟血流圖 (心內)': '心臟超音波',
+                    'Abdominal sonography腹部超音波(胃腸科)': '腹部超音波',
+                    'CT without / with contrast_Chest': 'Chest_CT',
+                    'CT without / with contrast_Abdomen': 'Abdomen_CT',
+                    'CT without contrast_Brain': 'Brain_CT',
+                    'MRI (with) contrast_Brain': 'Brain_MIR',
+                    'Urine routine examination': 'U/A',
+                    'Urine aerobic culture': 'U/C',
+                    'Salmonella,Shigella or other Pathogens culture': 'Salmonella(_)',
+                    'Stool Occult Blood(EIA/LIA) 糞便潛血免疫分析': 'Stool EIA(_/_)',
+                    '(on Foley)留置導尿 Urinal indwelling catheterlization(病房專用)': 'On Foley',
+                    '(ON NG TUBE)胃管插入Insertion of nasogastric tube': 'On NG',
+                    '(ICP)一般導尿 URINAL CATHETERLIZATION(病房專用)': '單次導尿',
+                    '(ON CVP)中央靜脈導管置入術 C.V.P. CATHETER INTUBATION': 'On CVP',
+                    '小量或留置灌腸': '灌腸',
+                    '胸腔穿刺 Thoracocentesis': '胸腔穿刺引流'
+                };
+                isMappingsLoaded = true;
+                loadFromStorage();
+                initializeMappings();
+            }
+        }
+
+        // 初始化頁面
+        window.addEventListener('load', function() {
+            loadMedicalTermsMapping();
+        });
+        
+        // 初始化顯示對照表
+        function initializeMappings() {
+            // 合併預設和自定義對照表
+            const allMappings = { ...medicalTermsMapping, ...customMappings };
+            displayMappings(allMappings);
+        }
+        
+        function displayMappings(mappings) {
+            const container = document.getElementById('mappings_list');
+            const count = Object.keys(mappings).length;
+            document.getElementById('mappings_count').textContent = count;
+            
+            if (count === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #9ca3af;">尚無對照規則</div>';
+                return;
+            }
+            
+            let html = '';
+            for (const [original, converted] of Object.entries(mappings)) {
+                const isCustom = customMappings.hasOwnProperty(original);
+                const itemClass = isCustom ? 'custom-mapping' : 'default-mapping';
+                const badge = isCustom ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">自定義</span>' : '<span style="background: #6b7280; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem;">預設</span>';
+                
+                html += `
+                    <div class="mapping-item ${itemClass}" style="
+                        padding: 12px; 
+                        border-bottom: 1px solid #f3f4f6; 
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    " 
+                    onmouseover="this.style.backgroundColor='#f9fafb'" 
+                    onmouseout="this.style.backgroundColor='white'"
+                    onclick="editMapping('${original.replace(/'/g, "\\'")}', '${converted.replace(/'/g, "\\'")}')"
+                    ondblclick="deleteMapping('${original.replace(/'/g, "\\'")}')">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #374151; margin-bottom: 4px;">${original}</div>
+                                <div style="color: #059669; font-weight: 600;">→ ${converted}</div>
+                            </div>
+                            <div>${badge}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function addNewMapping() {
+            document.getElementById('original_term').focus();
+        }
+        
+        function saveMappingRule() {
+            const original = document.getElementById('original_term').value.trim();
+            const converted = document.getElementById('converted_term').value.trim();
+            
+            if (!original || !converted) {
+                alert('請填寫完整的原始術語和轉換後縮寫！');
+                return;
+            }
+            
+            // 儲存到自定義對照表
+            customMappings[original] = converted;
+            
+            // 更新顯示
+            initializeMappings();
+            
+            // 清除表單
+            clearMappingForm();
+            
+            // 儲存到瀏覽器
+            saveToStorage();
+            
+            console.log(`✅ 已新增對照規則：${original} → ${converted}`);
+            
+            // 顯示成功訊息
+            const originalInput = document.getElementById('original_term');
+            const convertedInput = document.getElementById('converted_term');
+            const successMsg = document.getElementById('save_success_message');
+            
+            originalInput.style.borderColor = '#10b981';
+            convertedInput.style.borderColor = '#10b981';
+            successMsg.style.display = 'block';
+            
+            setTimeout(() => {
+                originalInput.style.borderColor = '#d1d5db';
+                convertedInput.style.borderColor = '#d1d5db';
+                successMsg.style.display = 'none';
+            }, 2000);
+        }
+        
+        function editMapping(original, converted) {
+            document.getElementById('original_term').value = original;
+            document.getElementById('converted_term').value = converted;
+            
+            // 滾動到表單
+            document.getElementById('original_term').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('original_term').focus();
+        }
+        
+        function deleteMapping(original) {
+            if (!confirm(`確定要刪除「${original}」這條對照規則嗎？`)) {
+                return;
+            }
+            
+            // 只能刪除自定義的對照規則
+            if (customMappings.hasOwnProperty(original)) {
+                delete customMappings[original];
+                initializeMappings();
+                saveToStorage();
+                console.log(`✅ 已刪除對照規則：${original}`);
+            } else {
+                alert('無法刪除預設的對照規則，只能刪除自定義的規則！');
+            }
+        }
+        
+        function clearMappingForm() {
+            document.getElementById('original_term').value = '';
+            document.getElementById('converted_term').value = '';
+        }
+        
+        function filterMappings() {
+            const searchTerm = document.getElementById('mapping_search').value.toLowerCase();
+            const allMappings = { ...medicalTermsMapping, ...customMappings };
+            
+            if (!searchTerm) {
+                displayMappings(allMappings);
+                return;
+            }
+            
+            const filteredMappings = {};
+            for (const [original, converted] of Object.entries(allMappings)) {
+                if (original.toLowerCase().includes(searchTerm) || 
+                    converted.toLowerCase().includes(searchTerm)) {
+                    filteredMappings[original] = converted;
+                }
+            }
+            
+            displayMappings(filteredMappings);
+        }
+        
+        function exportMappings() {
+            const exportData = {
+                customMappings: customMappings,
+                exportDate: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `medical_terms_mapping_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            console.log('✅ 對照表已匯出');
+        }
+        
+        function importMappings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        if (importData.customMappings) {
+                            const importCount = Object.keys(importData.customMappings).length;
+                            
+                            if (confirm(`即將匯入 ${importCount} 條對照規則，是否繼續？`)) {
+                                customMappings = { ...customMappings, ...importData.customMappings };
+                                initializeMappings();
+                                saveToStorage();
+                                alert(`✅ 成功匯入 ${importCount} 條對照規則！`);
+                            }
+                        } else {
+                            alert('❌ 檔案格式不正確！');
+                        }
+                    } catch (error) {
+                        alert('❌ 檔案解析失敗：' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        function resetToDefault() {
+            if (!confirm('確定要重置為預設對照表嗎？這將清除所有自定義規則！')) {
+                return;
+            }
+            
+            customMappings = {};
+            initializeMappings();
+            saveToStorage();
+            clearMappingForm();
+            alert('✅ 已重置為預設對照表！');
+        }
+        
+        function saveToStorage() {
+            try {
+                const data = {
+                    customMappings: customMappings,
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem('medicalTermsMappings', JSON.stringify(data));
+                console.log('💾 對照表已儲存到本地儲存');
+            } catch (error) {
+                console.warn('⚠️ 無法儲存到本地儲存：', error);
+            }
+        }
+        
+        function loadFromStorage() {
+            try {
+                const savedData = localStorage.getItem('medicalTermsMappings');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    customMappings = data.customMappings || {};
+                    console.log('📂 已從本地儲存載入對照表');
+                }
+            } catch (error) {
+                console.warn('⚠️ 無法從本地儲存載入：', error);
+                customMappings = {};
+            }
+        }
+
+        // 顯示系統資訊模態視窗
+        function showSystemInfo() {
+            const modal = document.createElement('div');
+            modal.className = 'system-modal';
+            modal.innerHTML = `
+                <div class="system-modal-content">
+                    <button class="close-modal" onclick="closeSystemModal()">&times;</button>
+                    
+                    <div style="text-align: center; margin: 15px 0;">
+                        <img src="icon_result (1).ico" alt="系統圖標" style="width: 48px; height: 48px;" />
+                    </div>
+                    
+                    <div style="text-align: center; margin: 20px 0; color: #334155;">
+                        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">
+                            更新日期：2025.07.05，版本：V1.2.0【開發者：CorrineXie】
+                        </div>
+                        <div style="font-size: 1rem; color: #64748b;">
+                            優化日誌：手術護理紀錄、護理計畫評值
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="corrinexie_qr.png" alt="開發者圖檔" style="max-width: 300px; max-height: 300px; border-radius: 18px;" />
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 點擊背景關閉模態視窗
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeSystemModal();
+                }
+            });
+        }
+
+        // 關閉系統資訊模態視窗
+        function closeSystemModal() {
+            const modal = document.querySelector('.system-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // ESC鍵關閉模態視窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSystemModal();
+            }
+        });
+    </script>
+</body>
+</html> 
