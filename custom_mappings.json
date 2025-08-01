@@ -1,8 +1,36 @@
 {
   "customMappings": {
+    "DNR不施行心肺復甦術": "DNR",
+    "On pigtail (pleural effusion) (胸腔插管)": "On pigtail",
+    "Fluid cytology plus cell block體液細胞檢查加細胞切片": "Cell block",
+    "Surgical pathology Level Ⅴ第五級外科病理，一般性": "Pathology",
+    "Chest PA（第二張）": "CXR",
+    "Chest AP（第二張）": "CXR",
+    "Frozen section冰凍切片檢查": "冰凍切片",
+    "冷凍切片製成之石蠟切片": "石蠟切片",
+    "CT without contrast_Chest": "Chest_CT",
+    "超音波導引下抽吸術或切片(胸腔內科)": "Chest_Echo Tapping",
+    "on O2 with simple mask": "Simple Mask",
+    "on O2 with Nasal cannula": "Nasal cannula",
+    "on trachea mask": "Tr. Mask",
+    "Change tracheostomy set (換造口器)": "Reon Tr.",
+    "Isolation（隔離防護）": "Isolation",
+    "許可出院 (Discharge)": "MBD",
+    "支氣管鏡檢查Bronchoscopy (胸腔內外科)": "支氣管鏡檢查",
+    "醣化血紅素HbA1c (Hemoglobin A1c)": "HbA1c",
+    "非侵襲性陽壓呼吸治療NON-INVASIVE POSITIVE PRESSURE (如NASAL PAP、CPAP、BI-PAP)。": "呼吸器",
+    "新型冠狀病毒核糖核酸定性擴增試驗": "COVID-19(_)",
+    "Occult blood (N-G) test": "NG OB(_)",
+    "肺炎披衣菌抗體IgM (ELISA)": "肺炎披衣菌抗體(_)",
+    "Blood gas analysis (限病房自行執行)": "GAS",
     "Pus aerobic & anaerobic culture": "Pus/C",
-    "DNR不施行心肺復甦術": "DNR"
+    "甲狀腺刺激素免疫分析 TSH(EIA/LIA)": "TSH",
+    "促腎上腺皮質素免疫分析Adrenocorticotropic Hormone (ACTH)(EIA/LIA)": "ACTH",
+    "Free-T4 (E.I.A)": "T4",
+    "D-dimer": "D-dimer",
+    "Amylase (Blood)": "Amylase",
+    "IV pump,or infusion pump": "Keep IV Pump"
   },
-  "exportDate": "2025-07-19T13:46:57.396Z",
+  "exportDate": "2025-08-01T02:42:16.282Z",
   "version": "1.0"
 }
